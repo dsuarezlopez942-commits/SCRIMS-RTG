@@ -1,7 +1,7 @@
-// Configuracion publica de SCRIMS RTG.
-// Completa estos valores con Project URL y anon/publishable key de Supabase.
-// Nunca pegues aqui la clave service_role.
+// Configuración pública de Supabase para SCRIMS RTG
+// La publishable key puede utilizarse en el navegador.
+// Nunca coloques aquí una secret key ni una service_role key.
 window.SCRIMS_CONFIG = {
-  supabaseUrl: "PEGA_AQUI_TU_SUPABASE_PROJECT_URL",
-  supabaseAnonKey: "PEGA_AQUI_TU_SUPABASE_PUBLISHABLE_O_ANON_KEY"
+  supabaseUrl: "https://ombdyosjwmexiqriyyaf.supabase.co",
+  supabaseAnonKey: "sb_publishable_yQSeL5AUfsNn-smcw0mMgA_Bti4GE8z"
 };
