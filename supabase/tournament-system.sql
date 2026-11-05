@@ -209,7 +209,7 @@ begin
  if t.registration_closes_at is not null and now()>t.registration_closes_at then raise exception 'Las inscripciones están cerradas.'; end if;
  if t.mode not in ('DUO','SQUAD') or captain.mode<>t.mode then raise exception 'La modalidad de tu cuenta no coincide con el torneo.'; end if;
  expected:=case when t.mode='DUO' then 2 else 4 end;
- if coalesce(array_length(teammate_uids,1),0)<>expected-1 then raise exception 'Debes indicar exactamente '||(expected-1)||' UID(s) de compañero(s).'; end if;
+ if coalesce(array_length(teammate_uids,1),0)<>expected-1 then raise exception 'Debes indicar exactamente % UID(s) de compañero(s).', expected-1; end if;
  if length(trim(coalesce(team_name,'')))<2 then raise exception 'Escribe un nombre de equipo válido.'; end if;
  select count(*) into used_slots from public.tournament_registrations where tournament_id=t.id and status<>'Cancelado';
  if used_slots>=t.max_slots then raise exception 'El torneo ya alcanzó su cupo máximo.'; end if;
