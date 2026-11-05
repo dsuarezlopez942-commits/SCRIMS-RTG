@@ -142,3 +142,17 @@ grant execute on function public.create_and_register_team(uuid,text,text[]) to a
 grant execute on function public.cancel_my_tournament_registration(uuid) to authenticated;
 
 -- Solo administradores pueden cambiar cupos, fechas de cierre y publicar/finalizar torneos.
+
+create or replace function public.get_tournament_registration_counts()
+returns table(tournament_id uuid, registered bigint)
+language sql stable security definer set search_path = public
+as $$
+  select t.id, count(r.id)
+  from public.tournaments t
+  left join public.tournament_registrations r
+    on r.tournament_id=t.id and r.status <> 'Cancelado'
+  where t.status <> 'Borrador'
+  group by t.id;
+$$;
+revoke all on function public.get_tournament_registration_counts() from public;
+grant execute on function public.get_tournament_registration_counts() to anon, authenticated;
