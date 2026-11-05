@@ -98,6 +98,20 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 .mode-card.duo:before{background-image:url("scrims-duo.jpg");background-position:center 35%;filter:none}
 .mode-card.squad:before{background-image:url("scrims-squad.jpg");background-position:center 35%;filter:none}
 @media(max-width:760px){.mode-grid{grid-template-columns:1fr}.mode-card{min-height:190px}}
+
+.rank-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:end;margin:18px 0 24px}
+.podium-card{position:relative;overflow:hidden;text-align:center;padding:20px 12px 18px;border:1px solid #ffffff20;border-radius:15px;background:linear-gradient(155deg,#222126,#111114);min-width:0}
+.podium-card.first{min-height:190px;border-color:#c9a85b88;background:linear-gradient(155deg,#49391d55,#171511 75%)}
+.podium-card.second{min-height:165px;border-color:#aeb8c888;background:linear-gradient(155deg,#343b4655,#141519 75%)}
+.podium-card.third{min-height:150px;border-color:#a66c4588;background:linear-gradient(155deg,#482b2055,#151214 75%)}
+.podium-medal{font-size:27px;line-height:1.2;margin-bottom:8px}
+.podium-place{font-size:10px;letter-spacing:2px;font-weight:900;color:#c4b5fd}
+.podium-name{font-weight:850;font-size:16px;overflow-wrap:anywhere;margin:8px 0 4px}
+.podium-points{font-size:25px;font-weight:900;letter-spacing:-1px}
+.podium-meta{font-size:11px;color:#a1a1aa}
+.rank-number{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#242329;font-weight:850}
+.rank-player{font-weight:800}.rank-sub{display:block;font-size:10px;color:#a1a1aa}
+@media(max-width:620px){.rank-podium{gap:7px}.podium-card{padding:14px 6px}.podium-card.first{min-height:166px}.podium-card.second{min-height:148px}.podium-card.third{min-height:135px}.podium-name{font-size:12px}.podium-points{font-size:20px}.podium-medal{font-size:22px}}
 </style>
 </head>
 <body>
@@ -128,7 +142,7 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 </section>
 <section id="jugadores" class="view hidden"><div class="card"><h3>Directorio de jugadores aprobados</h3><div class="actions" style="margin-bottom:12px"><select id="filterMode" style="max-width:180px"><option value="TODOS">Todas las modalidades</option><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></div><div id="playersTable" class="empty">Cargando…</div></div></section>
 <section id="torneos" class="view hidden"><div class="card"><h3>Torneos</h3><div id="tournamentsTable" class="empty">Cargando…</div></div></section>
-<section id="clasificacion" class="view hidden"><div class="card"><h3>Tabla de clasificación</h3><label style="max-width:180px;margin-bottom:12px">Modalidad<select id="rankMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><div id="rankingTable" class="empty">Cargando…</div><p class="muted">Los puntos se acumulan a partir de los resultados registrados por el administrador.</p></div></section>
+<section id="clasificacion" class="view hidden"><div class="card"><h3>Tabla de clasificación</h3><label style="max-width:180px;margin-bottom:12px">Modalidad<select id="rankMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><div id="rankingPodium" class="rank-podium"><div class="empty">Cargando podio…</div></div><div id="rankingTable" class="empty">Cargando…</div><p class="muted">Los puntos se acumulan a partir de los resultados registrados por el administrador.</p></div></section>
 <section id="admin" class="view grid hidden">
 <div class="card"><h3>Panel administrativo</h3><div id="adminGate" class="muted">Inicia sesión con tu cuenta de administrador para acceder a las herramientas.</div><div id="adminPanel" class="hidden">
 <h3>Solicitudes de jugadores</h3><div id="pendingTable" class="empty">Cargando…</div>
@@ -168,8 +182,11 @@ async function refresh(){
  const fm=$('filterMode').value;const visible=approved.filter(p=>fm==='TODOS'||p.mode===fm);
  $('playersTable').innerHTML=table(visible.map(p=>'<tr><td><b>'+esc(p.nickname)+'</b><br><small class="muted">UID: '+esc(p.game_uid)+'</small></td><td>'+p.mode+'</td><td>'+esc(p.team_name||'—')+'</td></tr>'),['Jugador / UID','Modo','Equipo']);
  $('tournamentsTable').innerHTML=table(tournaments.filter(t=>t.status!=='Borrador').map(t=>'<tr><td><b>'+esc(t.name)+'</b></td><td>'+t.mode+'</td><td>'+esc(t.status)+'</td><td>'+ (t.starts_at?new Date(t.starts_at).toLocaleString('es-BO'):'Por anunciar')+'</td></tr>'),['Torneo','Modo','Estado','Fecha']);
- const mode=$('rankMode').value;const rank=approved.filter(p=>p.mode===mode).map(p=>{const rs=results.filter(r=>r.player_id===p.id);return {...p,points:rs.reduce((s,r)=>s+r.points,0),kills:rs.reduce((s,r)=>s+r.kills,0)}}).sort((a,b)=>b.points-a.points||b.kills-a.kills);
- $('rankingTable').innerHTML=table(rank.map((p,i)=>'<tr><td>#'+(i+1)+'</td><td><b>'+esc(p.nickname)+'</b></td><td>'+p.points+'</td><td>'+p.kills+'</td></tr>'),['Posición','Jugador','Puntos','Kills']);
+ const mode=$('rankMode').value;const rank=approved.filter(p=>p.mode===mode).map(p=>{const rs=results.filter(r=>r.player_id===p.id);return {...p,points:rs.reduce((s,r)=>s+r.points,0),kills:rs.reduce((s,r)=>s+r.kills,0),matches:rs.length}}).sort((a,b)=>b.points-a.points||b.kills-a.kills);
+ const podium=rank.slice(0,3);const podiumOrder=[podium[1],podium[0],podium[2]];
+ const podiumClasses=['second','first','third'],medals=['🥈','👑','🥉'],places=['2.º LUGAR','1.º LUGAR','3.º LUGAR'];
+ $('rankingPodium').innerHTML=podium.length?podiumOrder.map((p,i)=>p?'<div class="podium-card '+podiumClasses[i]+'"><div class="podium-medal">'+medals[i]+'</div><div class="podium-place">'+places[i]+'</div><div class="podium-name">'+esc(p.nickname)+'</div><div class="podium-points">'+p.points+'</div><div class="podium-meta">PUNTOS · '+p.kills+' KILLS</div></div>':'<div class="podium-card '+podiumClasses[i]+'"><div class="podium-medal">—</div><div class="podium-place">'+places[i]+'</div><div class="podium-name">Por definir</div><div class="podium-meta">Sin resultados</div></div>').join(''):'<div class="empty" style="grid-column:1/-1">El podio aparecerá cuando se registren resultados.</div>';
+ $('rankingTable').innerHTML=table(rank.map((p,i)=>'<tr><td><span class="rank-number">'+(i+1)+'</span></td><td><span class="rank-player">'+esc(p.nickname)+'</span><span class="rank-sub">'+esc(p.team_name||p.mode)+'</span></td><td><b>'+p.points+'</b></td><td>'+p.kills+'</td><td>'+p.matches+'</td></tr>'),['Posición','Jugador / Equipo','Puntos','Kills','Partidas']);
  if(isAdmin)renderAdmin();
 }
 function renderAdmin(){
