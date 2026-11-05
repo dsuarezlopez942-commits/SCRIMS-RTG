@@ -80,12 +80,16 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
  table{font-size:12px}
  th,td{padding:10px 6px}
 }
+
+.hero{max-width:none;padding:28px 0 30px}
+.hero-banner{display:block;width:100%;aspect-ratio:16/5;object-fit:cover;object-position:center 38%;border:1px solid #ffffff20;border-radius:18px;margin:0 0 28px;box-shadow:0 18px 55px #0007}
+@media(max-width:700px){.hero-banner{aspect-ratio:16/8;border-radius:12px;margin-bottom:22px}}
 </style>
 </head>
 <body>
 <header><div class="wrap top"><div class="brand"><img class="logo" src="logo-rtg.png" alt="Logo SCRIMS RTG"><div><h1>SCRIMS RTG</h1><small>CUBEX POINTS MANAGER</small></div></div><span class="pill">CREATIVE DESTRUCTION</span></div></header>
 <main>
-<section class="hero"><div class="eyebrow">COMPETITIVE ARENA</div><h2>DOMINA LA <span>CLASIFICACIÓN.</span></h2><p>Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.</p></section>
+<section class="hero"><img class="hero-banner" src="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png" alt="Banner de SCRIMS RTG con personaje de Creative Destruction"><div class="eyebrow">COMPETITIVE ARENA</div><h2>DOMINA LA <span>CLASIFICACIÓN.</span></h2><p>Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.</p></section>
 <div class="card" id="connectionCard"><b>Conectando con SCRIMS RTG…</b><div class="muted" id="connectionText">Comprobando conexión segura con la base de datos.</div></div>
 <nav id="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="cuenta">Registro / Acceso</button><button class="tab" data-view="jugadores">Jugadores</button><button class="tab" data-view="torneos">Torneos</button><button class="tab" data-view="clasificacion">Clasificación</button><button class="tab" data-view="admin">Administrador</button></nav>
 <section id="inicio" class="view grid">
