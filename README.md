@@ -1,27 +1,44 @@
 # SCRIMS RTG — CUBEX POINTS MANAGER
 
-Plataforma para scrims y torneos de **Creative Destruction**.
+Plataforma web para scrims y torneos de **Creative Destruction**.
 
-## Estado del proyecto
+## Estado
 
-- `index.html`: primera interfaz visual de demostración (todavía no conectada a datos compartidos).
-- `config.js`: configuración pública pendiente de completar con la URL del proyecto Supabase y su clave anon/publishable.
-- `supabase/schema.sql`: esquema inicial de base de datos, registro de jugadores, torneos, resultados y políticas RLS.
+- `index.html`: interfaz conectada a Supabase Auth y a las tablas de perfiles, torneos y resultados.
+- `config.js`: URL del proyecto y publishable key pública de Supabase.
+- `supabase/schema.sql`: esquema PostgreSQL y políticas Row Level Security (RLS).
 
-**No publicar ni distribuir la interfaz actual como plataforma multiusuario todavía.** El siguiente paso es crear el proyecto Supabase, ejecutar el SQL, y luego conectar la interfaz con Supabase Auth y la base de datos. No contiene ni debe contener una clave `service_role`.
+## Publicación pendiente
 
-## Configuración pendiente
+El sitio todavía debe desplegarse en un hosting estático, por ejemplo Cloudflare Pages, conectado al repositorio GitHub.
 
-1. Crear un proyecto Supabase Free.
-2. Abrir el SQL Editor y ejecutar `supabase/schema.sql`.
-3. Completar `config.js` con Project URL y la clave pública anon/publishable.
-4. Registrar la cuenta del propietario desde la web.
-5. Promover esa cuenta a administradora ejecutando en SQL Editor el UPDATE comentado al final de `supabase/schema.sql`, sustituyendo `TU_CORREO` por el correo usado para registrarse.
-6. Conectar este repositorio a Cloudflare Pages para publicar el sitio.
+## Primer administrador
+
+1. Publica el sitio y abre su URL.
+2. Registra una cuenta con el correo que será administrador.
+3. Confirma el correo y entra a la plataforma.
+4. En Supabase > SQL Editor ejecuta esta consulta, sustituyendo el correo si corresponde:
+
+```sql
+update public.profiles p
+set role = 'admin'
+from auth.users u
+where p.id = u.id
+  and u.email = 'dsuarezlopez942@gmail.com';
+```
+
+5. Cierra sesión y vuelve a iniciar sesión para que la aplicación detecte el rol actualizado.
+
+El rol nunca se asigna desde el formulario público.
+
+## Reglas de puntuación
+
+- SOLO: puntos por posición según la tabla incorporada en la aplicación y 2 puntos por kill hasta 10 kills.
+- DUO y SQUAD: puntos manuales hasta que el organizador confirme sus reglas.
 
 ## Seguridad
 
-- No guardar contraseñas de jugadores en tablas propias; Supabase Auth administra las credenciales.
-- Nunca colocar una clave `service_role` en archivos del frontend.
-- Las tablas usan Row Level Security (RLS); revisar las políticas antes de añadir nuevas funciones.
-- El rol administrador se asigna manualmente desde SQL, nunca desde el formulario público.
+- Las contraseñas se gestionan mediante Supabase Auth; la aplicación no almacena contraseñas propias.
+- La publishable key es pública y está diseñada para el navegador.
+- Nunca colocar una secret key ni una service_role key en el frontend.
+- Las tablas están protegidas mediante RLS. Revisar las políticas antes de ampliar permisos.
