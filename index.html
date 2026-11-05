@@ -2,7 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080b16">
+<meta name="theme-color" content="#09090b">
+<meta name="description" content="SCRIMS RTG: torneos, scrims y clasificación competitiva de Creative Destruction.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="logo-rtg.png">
 <title>SCRIMS RTG | CUBEX POINTS MANAGER</title>
 <style>
 :root{
@@ -131,6 +137,65 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 .avatar-upload{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 18px}
 .avatar-upload input{max-width:280px;padding:8px;font-size:12px}
 .avatar-note{font-size:11px;color:#a1a1aa}
+
+/* SCRIMS RTG · experiencia móvil */
+html{min-width:320px;-webkit-text-size-adjust:100%;scroll-padding-top:84px}
+body{overflow-x:hidden}
+img{max-width:100%}
+button,.tab,input,select{touch-action:manipulation}
+button,.tab{min-height:42px}
+@media(max-width:700px){
+ header .wrap{padding:10px 14px}
+ .logo{width:42px;height:42px}
+ .brand{gap:9px}
+ .brand h1{font-size:14px}
+ header .pill{font-size:9px}
+ main{margin:10px auto 0;padding:0 12px 32px}
+ .hero{padding:20px 0 18px}
+ .hero-banner{aspect-ratio:16/9;object-position:center 38%;margin-bottom:17px}
+ .hero h2{font-size:clamp(30px,9vw,46px);line-height:1.03;letter-spacing:-1.4px;margin:10px 0}
+ .hero p{font-size:14px;line-height:1.65;margin:8px 0}
+ nav#tabs{position:sticky;top:0;z-index:4;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:6px;margin:10px 0 16px;border-radius:12px;background:#111114f2;backdrop-filter:blur(14px)}
+ nav#tabs .tab{min-width:0;padding:9px 4px;font-size:11px;line-height:1.2;white-space:normal}
+ .card{padding:15px;border-radius:13px}
+ .grid{gap:12px}
+ .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .stat{padding:11px 8px}
+ .stat b{font-size:23px}
+ .stat span{font-size:10px;line-height:1.3;display:block}
+ .mode-grid{grid-template-columns:1fr;gap:10px}
+ .mode-card{min-height:190px;padding:16px}
+ .row{grid-template-columns:1fr;gap:10px}
+ input,select{font-size:16px;min-height:46px;padding:11px 12px}
+ form{gap:11px}
+ form button,.actions button{min-height:44px}
+ .actions{gap:7px}
+ .player-directory{grid-template-columns:1fr}
+ .player-card{padding:12px;gap:10px}
+ .player-card button{min-height:40px;padding:8px}
+ .profile-panel{padding:15px}
+ .profile-head{gap:12px}
+ .profile-title h3{font-size:19px}
+ .profile-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .profile-stat{padding:11px}
+ .rank-podium{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .podium-card{padding:12px 5px;min-height:132px!important}
+ .podium-card.first{min-height:148px!important}
+ .podium-name{font-size:11px;line-height:1.25}
+ .podium-points{font-size:19px}
+ .podium-place{font-size:8px;letter-spacing:1px}
+ table{display:block;max-width:100%;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+ th,td{padding:10px 8px}
+ #connectionCard{margin-bottom:12px}
+ footer{padding:20px 12px}
+}
+@media(max-width:380px){
+ nav#tabs .tab{font-size:10px;padding:8px 2px}
+ .stats{grid-template-columns:1fr}
+ .rank-podium{grid-template-columns:1fr}
+ .podium-card,.podium-card.first{min-height:unset!important}
+ .profile-head{align-items:center}
+}
 </style>
 </head>
 <body>
@@ -272,4 +337,5 @@ setConnection('Conexión inicial con Supabase establecida. Los datos se cargará
 sb.auth.onAuthStateChange(()=>{setTimeout(sessionChanged,0)});sessionChanged();
 })();
 </script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA no disponible:',err)));}</script>
 </body></html>
