@@ -84,6 +84,20 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 .hero{max-width:none;padding:28px 0 30px}
 .hero-banner{display:block;width:100%;aspect-ratio:16/5;object-fit:cover;object-position:center 38%;border:1px solid #ffffff20;border-radius:18px;margin:0 0 28px;box-shadow:0 18px 55px #0007}
 @media(max-width:700px){.hero-banner{aspect-ratio:16/8;border-radius:12px;margin-bottom:22px}}
+
+.mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.mode-card{position:relative;isolation:isolate;overflow:hidden;min-height:230px;border:1px solid #ffffff22;border-radius:16px;background:#17171b;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;box-shadow:0 14px 36px #0005}
+.mode-card:before{content:"";position:absolute;inset:0;z-index:-2;background-image:url("Guerrera%20futurista%20en%20el%20desierto%20vibrante.png");background-size:cover;background-position:center 35%;opacity:.55;transition:transform .35s,opacity .35s}
+.mode-card:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#08080a10 0%,#08080a55 38%,#08080af2 100%)}
+.mode-card:hover:before{transform:scale(1.06);opacity:.75}
+.mode-card .mode-tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#e4e4e7;font-weight:800}
+.mode-card h3{font-size:30px;letter-spacing:1px;margin:5px 0 3px}
+.mode-card p{margin:0 0 14px;color:#d4d4d8;font-size:12px}
+.mode-card button{align-self:flex-start;background:#f4f4f5;color:#111114;border-color:#f4f4f5;padding:9px 14px}
+.mode-card button:hover{background:#dddde2;color:#09090b}
+.mode-card.duo:before{background-position:42% 35%;filter:hue-rotate(18deg)}
+.mode-card.squad:before{background-position:58% 35%;filter:hue-rotate(42deg)}
+@media(max-width:760px){.mode-grid{grid-template-columns:1fr}.mode-card{min-height:190px}}
 </style>
 </head>
 <body>
@@ -94,7 +108,11 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 <nav id="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="cuenta">Registro / Acceso</button><button class="tab" data-view="jugadores">Jugadores</button><button class="tab" data-view="torneos">Torneos</button><button class="tab" data-view="clasificacion">Clasificación</button><button class="tab" data-view="admin">Administrador</button></nav>
 <section id="inicio" class="view grid">
 <div class="card"><h3>Panel de competencia</h3><div class="stats"><div class="stat"><b id="countPlayers">0</b><span>Jugadores aprobados</span></div><div class="stat"><b id="countTournaments">0</b><span>Torneos publicados</span></div><div class="stat"><b id="countResults">0</b><span>Resultados cargados</span></div></div></div>
-<div class="card half"><h3>Modos de juego</h3><p class="muted">Competiciones independientes por modalidad.</p><div class="actions"><span class="pill">SOLO</span><span class="pill">DUO</span><span class="pill">SQUAD</span></div></div>
+<div class="card"><h3>Elige tu modalidad</h3><p class="muted">Selecciona cómo quieres competir en SCRIMS RTG.</p><div class="mode-grid">
+<article class="mode-card solo"><span class="mode-tag">Competencia individual</span><h3>SOLO</h3><p>Demuestra tu nivel por tu cuenta.</p><button type="button" class="mode-action" data-mode="SOLO">Registrarme en SOLO</button></article>
+<article class="mode-card duo"><span class="mode-tag">Estrategia en pareja</span><h3>DUO</h3><p>Compite junto a tu compañero.</p><button type="button" class="mode-action" data-mode="DUO">Registrarme en DUO</button></article>
+<article class="mode-card squad"><span class="mode-tag">Combate por equipos</span><h3>SQUAD</h3><p>Forma tu equipo y lucha por el primer puesto.</p><button type="button" class="mode-action" data-mode="SQUAD">Registrarme en SQUAD</button></article>
+</div></div>
 <div class="card half"><h3>Estado de tu cuenta</h3><div id="sessionInfo" class="muted">No has iniciado sesión.</div><p class="muted">Los registros y resultados se comparten mediante Supabase. Las solicitudes nuevas requieren aprobación del administrador.</p></div>
 <div class="card"><h3>Últimos torneos</h3><div id="homeTournaments" class="empty">Cargando torneos…</div></div>
 </section>
@@ -130,6 +148,11 @@ let sb=null,user=null,profile=null,isAdmin=false,players=[],tournaments=[],resul
 function msg(id,text,error=false){const el=$(id);el.className=error?'status error':'status';el.textContent=text}
 function nav(view){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==view));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===view));if(view==='jugadores'||view==='clasificacion'||view==='torneos'||view==='admin')refresh();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.view)));
+document.querySelectorAll('.mode-action').forEach(b=>b.addEventListener('click',()=>{
+ $('suMode').value=b.dataset.mode;
+ nav('cuenta');
+ window.scrollTo({top:0,behavior:'smooth'});
+}));
 function setConnection(text,ok){$('connectionText').textContent=text;$('connectionCard').classList.toggle('hidden',!!ok)}
 function soloPlacement(p){const scores={25:1,24:2,23:3,22:4,21:5,20:6,19:7,18:8,17:10,16:11,15:14,14:16,13:18,12:20,11:22,10:24,9:28,8:32,7:36,6:40,5:45,4:50,3:55,2:60,1:65};return scores[p]||0}
 function table(rows,heads){if(!rows.length)return '<div class="empty">Todavía no hay registros.</div>';return '<div style="overflow-x:auto"><table><thead><tr>'+heads.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>'}
