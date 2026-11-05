@@ -20,6 +20,27 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:radial-gradient(ellipse at 50% -18%,#27212f 0,transparent 42%),var(--bg);color:var(--white);font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-height:100vh;letter-spacing:.01em}
+/* Fondo animado SCRIMS RTG: energía y partículas sutiles */
+body{isolation:isolate;position:relative}
+body:before{
+ content:"";position:fixed;inset:-35%;z-index:-1;pointer-events:none;
+ background:
+  radial-gradient(circle at 18% 28%,#8b5cf633 0,transparent 22%),
+  radial-gradient(circle at 78% 22%,#6366f122 0,transparent 24%),
+  radial-gradient(circle at 58% 78%,#a78bfa20 0,transparent 25%),
+  radial-gradient(circle at 30% 82%,#7c3aed18 0,transparent 20%),
+  radial-gradient(#ffffff35 .7px,transparent .9px);
+ background-size:auto,auto,auto,auto,34px 34px;
+ animation:rtgAmbient 28s ease-in-out infinite alternate;
+ opacity:.78;
+}
+@keyframes rtgAmbient{
+ 0%{transform:translate3d(-1.5%, -1%, 0) rotate(0deg);background-position:0 0,0 0,0 0,0 0,0 0}
+ 50%{transform:translate3d(1.5%, 1%, 0) rotate(2deg);background-position:30px -20px,-25px 18px,20px 25px,-18px -15px,17px 22px}
+ 100%{transform:translate3d(-.5%, 2%, 0) rotate(-1deg);background-position:-20px 25px,28px -15px,-25px 18px,22px 12px,-16px -20px}
+}
+@media(prefers-reduced-motion:reduce){body:before{animation:none}}
+
 header{border-bottom:1px solid #ffffff12;background:#09090beF;backdrop-filter:blur(18px);position:sticky;top:0;z-index:5}
 .wrap{max-width:1200px;margin:auto;padding:17px 26px}
 .brand{display:flex;align-items:center;gap:13px}
