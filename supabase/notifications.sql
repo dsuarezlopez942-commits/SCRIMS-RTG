@@ -16,8 +16,6 @@ grant select on public.notifications to authenticated;
 revoke update on public.notifications from anon, authenticated;
 grant update (read_at) on public.notifications to authenticated;
 
--- Esta función solo debe ejecutarse desde triggers internos, nunca como RPC público.
-revoke all on function public.notify_approved_players(text,text,text,text) from public, anon, authenticated;
 drop policy if exists "Players read own notifications" on public.notifications;
 create policy "Players read own notifications" on public.notifications for select to authenticated using(user_id=auth.uid() or public.is_scrims_admin());
 drop policy if exists "Players mark own notifications read" on public.notifications;
@@ -27,7 +25,10 @@ create or replace function public.notify_approved_players(p_title text,p_message
 returns void language sql security definer set search_path=public as $$
  insert into public.notifications(user_id,title,message,kind,link)
  select id,p_title,p_message,p_kind,p_link from public.profiles where status='Aprobado';
-$$;
+$;
+
+-- Esta función solo debe ejecutarse desde triggers internos, nunca como RPC público.
+revoke all on function public.notify_approved_players(text,text,text,text) from public, anon, authenticated;
 
 create or replace function public.notify_tournament_events()
 returns trigger language plpgsql security definer set search_path=public as $$
