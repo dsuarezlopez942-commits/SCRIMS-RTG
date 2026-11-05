@@ -11,7 +11,13 @@ create table if not exists public.notifications (
 );
 create index if not exists notifications_user_created_idx on public.notifications(user_id, created_at desc);
 alter table public.notifications enable row level security;
-grant select, update on public.notifications to authenticated;
+grant select on public.notifications to authenticated;
+-- Los usuarios solo pueden marcar sus propias notificaciones como leídas.
+revoke update on public.notifications from anon, authenticated;
+grant update (read_at) on public.notifications to authenticated;
+
+-- Esta función solo debe ejecutarse desde triggers internos, nunca como RPC público.
+revoke all on function public.notify_approved_players(text,text,text,text) from public, anon, authenticated;
 drop policy if exists "Players read own notifications" on public.notifications;
 create policy "Players read own notifications" on public.notifications for select to authenticated using(user_id=auth.uid() or public.is_scrims_admin());
 drop policy if exists "Players mark own notifications read" on public.notifications;
