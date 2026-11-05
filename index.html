@@ -113,6 +113,19 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 .rank-number{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#242329;font-weight:850}
 .rank-player{font-weight:800}.rank-sub{display:block;font-size:10px;color:#a1a1aa}
 @media(max-width:620px){.rank-podium{gap:7px}.podium-card{padding:14px 6px}.podium-card.first{min-height:166px}.podium-card.second{min-height:148px}.podium-card.third{min-height:135px}.podium-name{font-size:12px}.podium-points{font-size:20px}.podium-medal{font-size:22px}}
+
+.player-directory{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:13px}
+.player-card{background:linear-gradient(145deg,#1b1b21,#101014);border:1px solid #303039;border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;min-width:0}
+.player-avatar{width:48px;height:48px;flex:0 0 48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#e4d5a7,#7762a8);color:#111;font-weight:950;font-size:17px;box-shadow:0 5px 18px #0006}
+.player-card-info{min-width:0;flex:1}.player-card-info b{display:block;overflow-wrap:anywhere}.player-card-info small{color:#a1a1aa}
+.profile-panel{margin-top:18px;background:linear-gradient(145deg,#1a1920,#101014);border:1px solid #51465f;border-radius:16px;padding:22px}
+.profile-head{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.profile-avatar{width:76px;height:76px;border-radius:20px;display:grid;place-items:center;flex:0 0 76px;background:linear-gradient(135deg,#e4d5a7,#7762a8);color:#111;font-size:27px;font-weight:950}
+.profile-title{min-width:0}.profile-title h3{margin:0 0 4px;font-size:22px;overflow-wrap:anywhere}
+.profile-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}
+.profile-stat{background:#0b0b0e;border:1px solid #29292f;border-radius:12px;padding:13px}
+.profile-stat b{display:block;font-size:23px}.profile-stat span{font-size:10px;color:#a1a1aa;text-transform:uppercase;letter-spacing:1px}
+@media(max-width:620px){.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-head{align-items:flex-start}.profile-avatar{width:62px;height:62px;flex-basis:62px}}
 </style>
 </head>
 <body>
@@ -141,7 +154,7 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 <button class="primary">Crear mi cuenta</button><div id="signupMsg" aria-live="polite"></div></form><div class="notice">Usa únicamente tu correo y una contraseña nueva para SCRIMS RTG. Nunca ingreses la contraseña de Creative Destruction. Confirma tu correo si Supabase te lo solicita.</div></div>
 <div class="card half"><h3>Iniciar sesión</h3><form id="loginForm"><label>Correo electrónico<input id="liEmail" type="email" autocomplete="email" required></label><label>Contraseña<input id="liPassword" type="password" autocomplete="current-password" required></label><button class="primary">Entrar</button><div id="loginMsg" aria-live="polite"></div></form><button id="logoutBtn" class="danger hidden" type="button">Cerrar sesión</button><p class="muted">Si acabas de registrarte, revisa tu bandeja de entrada y confirma tu correo antes de iniciar sesión.</p></div>
 </section>
-<section id="jugadores" class="view hidden"><div class="card"><h3>Directorio de jugadores aprobados</h3><div class="actions" style="margin-bottom:12px"><select id="filterMode" style="max-width:180px"><option value="TODOS">Todas las modalidades</option><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></div><div id="playersTable" class="empty">Cargando…</div></div></section>
+<section id="jugadores" class="view hidden"><div class="card"><h3>Directorio de jugadores aprobados</h3><div class="actions" style="margin-bottom:12px"><select id="filterMode" style="max-width:180px"><option value="TODOS">Todas las modalidades</option><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></div><div id="playersTable" class="player-directory"><div class="empty">Cargando…</div></div><div id="playerProfile" class="profile-panel hidden" aria-live="polite"></div></div></section>
 <section id="torneos" class="view hidden"><div class="card"><h3>Torneos</h3><div id="tournamentsTable" class="empty">Cargando…</div></div></section>
 <section id="clasificacion" class="view hidden"><div class="card"><h3>Tabla de clasificación</h3><label style="max-width:180px;margin-bottom:12px">Modalidad<select id="rankMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><div id="rankingPodium" class="rank-podium"><div class="empty">Cargando podio…</div></div><div id="rankingTable" class="empty">Cargando…</div><p class="muted">Los puntos se acumulan a partir de los resultados registrados por el administrador.</p></div></section>
 <section id="admin" class="view grid hidden">
@@ -181,7 +194,8 @@ async function refresh(){
  $('countPlayers').textContent=approved.length;$('countTournaments').textContent=tournaments.filter(t=>t.status!=='Borrador').length;$('countResults').textContent=results.length;
  $('homeTournaments').innerHTML=table(tournaments.filter(t=>t.status!=='Borrador').slice(0,5).map(t=>'<tr><td><b>'+esc(t.name)+'</b></td><td>'+t.mode+'</td><td>'+esc(t.status)+'</td></tr>'),['Torneo','Modo','Estado']);
  const fm=$('filterMode').value;const visible=approved.filter(p=>fm==='TODOS'||p.mode===fm);
- $('playersTable').innerHTML=table(visible.map(p=>'<tr><td><b>'+esc(p.nickname)+'</b><br><small class="muted">UID: '+esc(p.game_uid)+'</small></td><td>'+p.mode+'</td><td>'+esc(p.team_name||'—')+'</td></tr>'),['Jugador / UID','Modo','Equipo']);
+ $('playersTable').innerHTML=visible.length?visible.map(p=>'<article class="player-card"><div class="player-avatar">'+esc((p.nickname||'?').trim().slice(0,2).toUpperCase())+'</div><div class="player-card-info"><b>'+esc(p.nickname)+'</b><small>'+p.mode+' · '+esc(p.team_name||'Sin equipo')+'</small></div><button class="small" type="button" data-profile="'+p.id+'">Ver perfil</button></article>').join(''):'<div class="empty" style="grid-column:1/-1">Todavía no hay jugadores aprobados.</div>';
+ document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>showPlayerProfile(b.dataset.profile));
  $('tournamentsTable').innerHTML=table(tournaments.filter(t=>t.status!=='Borrador').map(t=>'<tr><td><b>'+esc(t.name)+'</b></td><td>'+t.mode+'</td><td>'+esc(t.status)+'</td><td>'+ (t.starts_at?new Date(t.starts_at).toLocaleString('es-BO'):'Por anunciar')+'</td></tr>'),['Torneo','Modo','Estado','Fecha']);
  const mode=$('rankMode').value;const rank=approved.filter(p=>p.mode===mode).map(p=>{const rs=results.filter(r=>r.player_id===p.id);return {...p,points:rs.reduce((s,r)=>s+r.points,0),kills:rs.reduce((s,r)=>s+r.kills,0),matches:rs.length}}).sort((a,b)=>b.points-a.points||b.kills-a.kills);
  const podium=rank.slice(0,3);const podiumOrder=[podium[1],podium[0],podium[2]];
@@ -189,6 +203,16 @@ async function refresh(){
  $('rankingPodium').innerHTML=podium.length?podiumOrder.map((p,i)=>p?'<div class="podium-card '+podiumClasses[i]+'"><div class="podium-medal">'+medals[i]+'</div><div class="podium-place">'+places[i]+'</div><div class="podium-name">'+esc(p.nickname)+'</div><div class="podium-points">'+p.points+'</div><div class="podium-meta">PUNTOS · '+p.kills+' KILLS</div></div>':'<div class="podium-card '+podiumClasses[i]+'"><div class="podium-medal">—</div><div class="podium-place">'+places[i]+'</div><div class="podium-name">Por definir</div><div class="podium-meta">Sin resultados</div></div>').join(''):'<div class="empty" style="grid-column:1/-1">El podio aparecerá cuando se registren resultados.</div>';
  $('rankingTable').innerHTML=table(rank.map((p,i)=>'<tr><td><span class="rank-number">'+(i+1)+'</span></td><td><span class="rank-player">'+esc(p.nickname)+'</span><span class="rank-sub">'+esc(p.team_name||p.mode)+'</span></td><td><b>'+p.points+'</b></td><td>'+p.kills+'</td><td>'+p.matches+'</td></tr>'),['Posición','Jugador / Equipo','Puntos','Kills','Partidas']);
  if(isAdmin)renderAdmin();
+}
+function showPlayerProfile(id){
+ const p=players.find(x=>x.id===id&&x.status==='Aprobado');if(!p)return;
+ const rs=results.filter(r=>r.player_id===p.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+ const points=rs.reduce((n,r)=>n+(Number(r.points)||0),0),kills=rs.reduce((n,r)=>n+(Number(r.kills)||0),0);
+ const tournamentsPlayed=rs.map(r=>tournaments.find(t=>t.id===r.tournament_id)).filter(Boolean);
+ $('playerProfile').classList.remove('hidden');
+ $('playerProfile').innerHTML='<div class="actions" style="justify-content:space-between;align-items:center"><span class="pill ok">PERFIL DE JUGADOR</span><button type="button" class="small" id="closePlayerProfile">Cerrar</button></div><div class="profile-head" style="margin-top:18px"><div class="profile-avatar">'+esc((p.nickname||'?').trim().slice(0,2).toUpperCase())+'</div><div class="profile-title"><h3>'+esc(p.nickname)+'</h3><div class="muted">'+p.mode+' · '+esc(p.team_name||'Sin equipo')+'</div><small class="muted">UID: '+esc(p.game_uid)+'</small></div></div><div class="profile-stats"><div class="profile-stat"><b>'+rs.length+'</b><span>Partidas</span></div><div class="profile-stat"><b>'+kills+'</b><span>Kills</span></div><div class="profile-stat"><b>'+points+'</b><span>Puntos</span></div><div class="profile-stat"><b>'+(rs.length?(kills/rs.length).toFixed(1):'0.0')+'</b><span>Kills / partida</span></div></div><h3>Historial de resultados</h3>'+ (rs.length?table(rs.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>#'+r.placement+'</td><td>'+r.kills+'</td><td><b>'+r.points+'</b></td></tr>'}),['Torneo','Posición','Kills','Puntos']):'<div class="empty">Este jugador todavía no tiene resultados registrados.</div>');
+ $('closePlayerProfile').onclick=()=>$('playerProfile').classList.add('hidden');
+ $('playerProfile').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderAdmin(){
  const pending=players.filter(p=>p.status==='Pendiente');
