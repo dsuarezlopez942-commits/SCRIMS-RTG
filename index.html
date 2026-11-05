@@ -244,7 +244,7 @@ button,.tab{min-height:42px}
 <script>
 (function(){
 const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sb=null,user=null,profile=null,isAdmin=false,players=[],tournaments=[],results=[],registrations=[],teams=[],registrationCounts={},teamResults=[];
+let sb=null,user=null,profile=null,isAdmin=false,players=[],tournaments=[],results=[],registrations=[],teams=[],registrationCounts={},teamResults=[],myTeamIds=[];
 function msg(id,text,error=false){const el=$(id);el.className=error?'status error':'status';el.textContent=text}
 function nav(view){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==view));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===view));if(view==='jugadores'||view==='clasificacion'||view==='torneos'||view==='admin')refresh();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.view)));
@@ -261,7 +261,7 @@ async function refresh(){
  const [pr,tr]=await Promise.all([sb.from('profiles').select('id,nickname,game_uid,mode,team_name,status,role,avatar_url,created_at').order('created_at',{ascending:false}),sb.from('tournaments').select('*').order('created_at',{ascending:false})]);
  if(pr.error)console.warn(pr.error);else players=pr.data||[];
  if(tr.error)console.warn(tr.error);else tournaments=tr.data||[];
- const [rr,counts]=await Promise.all([sb.from('match_results').select('id,tournament_id,player_id,team_id,placement,kills,points,created_at'),sb.rpc('get_tournament_registration_counts')]);if(!rr.error)results=rr.data||[];if(!counts.error)registrationCounts=Object.fromEntries((counts.data||[]).map(x=>[x.tournament_id,Number(x.registered)]));const trr=await sb.from('team_results').select('id,tournament_id,team_id,placement,kills,points,created_at');if(!trr.error)teamResults=trr.data||[];const tm=await sb.from('scrim_teams').select('id,name,mode,captain_id');if(!tm.error)teams=tm.data||[];if(user){const rg=await sb.from('tournament_registrations').select('id,tournament_id,player_id,team_id,status,created_at').order('created_at',{ascending:false});if(!rg.error)registrations=rg.data||[];}else registrations=[];
+ const [rr,counts]=await Promise.all([sb.from('match_results').select('id,tournament_id,player_id,team_id,placement,kills,points,created_at'),sb.rpc('get_tournament_registration_counts')]);if(!rr.error)results=rr.data||[];if(!counts.error)registrationCounts=Object.fromEntries((counts.data||[]).map(x=>[x.tournament_id,Number(x.registered)]));const trr=await sb.from('team_results').select('id,tournament_id,team_id,placement,kills,points,created_at');if(!trr.error)teamResults=trr.data||[];const tm=await sb.from('scrim_teams').select('id,name,mode,captain_id');if(!tm.error)teams=tm.data||[];if(user){const [rg,mt]=await Promise.all([sb.from('tournament_registrations').select('id,tournament_id,player_id,team_id,status,created_at').order('created_at',{ascending:false}),sb.from('scrim_team_members').select('team_id').eq('player_id',user.id)]);if(!rg.error)registrations=rg.data||[];myTeamIds=(mt.data||[]).map(x=>x.team_id);}else{registrations=[];myTeamIds=[];}
  const approved=players.filter(p=>p.status==='Aprobado');
  $('countPlayers').textContent=approved.length;$('countTournaments').textContent=tournaments.filter(t=>t.status!=='Borrador').length;$('countResults').textContent=results.length;
  $('homeTournaments').innerHTML=table(tournaments.filter(t=>t.status!=='Borrador').slice(0,5).map(t=>'<tr><td><b>'+esc(t.name)+'</b></td><td>'+t.mode+'</td><td>'+esc(t.status)+'</td></tr>'),['Torneo','Modo','Estado']);
@@ -317,7 +317,7 @@ function renderTournamentCards(){
  if(!list.length){$('tournamentsTable').innerHTML='<div class="empty">Todavía no hay torneos publicados.</div>';return}
  $('tournamentsTable').innerHTML=list.map(t=>{
   const used=registrationCounts[t.id]||0,full=used>=Number(t.max_slots||100),closed=!t.registration_open||(t.registration_closes_at&&new Date(t.registration_closes_at)<new Date())||t.status!=='Abierto';
-  const mine=registrations.find(r=>r.tournament_id===t.id&&r.status!=='Cancelado'&&(r.player_id===user?.id||teams.some(tm=>tm.id===r.team_id)));
+  const mine=registrations.find(r=>r.tournament_id===t.id&&r.status!=='Cancelado'&&(r.player_id===user?.id||myTeamIds.includes(r.team_id)));
   let action='';
   if(mine)action='<span class="pill ok">Ya estás inscrito</span>';
   else if(closed||full)action='<span class="pill wait">'+(full?'Cupo completo':'Inscripciones cerradas')+'</span>';
@@ -334,7 +334,7 @@ function renderTournamentCards(){
  document.querySelectorAll('[data-toggle-registration]').forEach(b=>b.onclick=async()=>{const t=tournaments.find(x=>x.id===b.dataset.toggleRegistration);const {error}=await sb.from('tournaments').update({registration_open:!t.registration_open}).eq('id',t.id);if(error)alert(error.message);else await refresh()});
 }
 function renderMyRegistrations(){
- const mine=registrations.filter(r=>r.status!=='Cancelado'&&(r.player_id===user?.id||teams.some(t=>t.id===r.team_id)));
+ const mine=registrations.filter(r=>r.status!=='Cancelado'&&(r.player_id===user?.id||myTeamIds.includes(r.team_id)));
  if(!mine.length)return '<div class="empty">Todavía no tienes inscripciones activas.</div>';
  return table(mine.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),team=teams.find(x=>x.id===r.team_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>'+(team?esc(team.name):'Individual')+'</td><td><span class="pill ok">'+r.status+'</span></td></tr>'}),['Torneo','Participación','Estado']);
 }
