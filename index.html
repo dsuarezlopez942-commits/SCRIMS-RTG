@@ -227,7 +227,7 @@ button,.tab{min-height:42px}
 <div class="card half"><h3>Iniciar sesión</h3><form id="loginForm"><label>Correo electrónico<input id="liEmail" type="email" autocomplete="email" required></label><label>Contraseña<input id="liPassword" type="password" autocomplete="current-password" required></label><button class="primary">Entrar</button><div id="loginMsg" aria-live="polite"></div></form><button id="logoutBtn" class="danger hidden" type="button">Cerrar sesión</button><p class="muted">Si acabas de registrarte, revisa tu bandeja de entrada y confirma tu correo antes de iniciar sesión.</p></div>
 </section>
 <section id="jugadores" class="view hidden"><div class="card"><h3>Directorio de jugadores aprobados</h3><div class="actions" style="margin-bottom:12px"><select id="filterMode" style="max-width:180px"><option value="TODOS">Todas las modalidades</option><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></div><div id="playersTable" class="player-directory"><div class="empty">Cargando…</div></div><div id="playerProfile" class="profile-panel hidden" aria-live="polite"></div></div></section>
-<section id="torneos" class="view hidden"><div class="card"><h3>Torneos disponibles</h3><p class="muted">Inscríbete en SOLO o registra a tu equipo en DUO/SQUAD.</p><div id="tournamentsTable" class="tournament-grid"><div class="empty">Cargando torneos…</div></div><div class="admin-list"><h3>Mis inscripciones</h3><div id="myRegistrations" class="empty">Inicia sesión para consultar tus inscripciones.</div></div></div></section>
+<section id="torneos" class="view hidden"><div class="card"><h3>Torneos disponibles</h3><p class="muted">Inscríbete en SOLO o registra a tu equipo en DUO/SQUAD.</p><div id="tournamentsTable" class="tournament-grid"><div class="empty">Cargando torneos…</div></div><div class="admin-list"><h3>Mis inscripciones</h3><div id="myRegistrations" class="empty">Inicia sesión para consultar tus inscripciones.</div></div><div class="admin-list"><h3>Historial de resultados de torneos</h3><div id="tournamentHistory" class="empty">Cargando resultados…</div></div></div></section>
 <section id="clasificacion" class="view hidden"><div class="card"><h3>Tabla de clasificación</h3><label style="max-width:180px;margin-bottom:12px">Modalidad<select id="rankMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><div id="rankingPodium" class="rank-podium"><div class="empty">Cargando podio…</div></div><div id="rankingTable" class="empty">Cargando…</div><p class="muted">Los puntos se acumulan a partir de los resultados registrados por el administrador.</p></div></section>
 <section id="admin" class="view grid hidden">
 <div class="card"><h3>Panel administrativo</h3><div id="adminGate" class="muted">Inicia sesión con tu cuenta de administrador para acceder a las herramientas.</div><div id="adminPanel" class="hidden">
@@ -268,7 +268,8 @@ async function refresh(){
  const fm=$('filterMode').value;const visible=approved.filter(p=>fm==='TODOS'||p.mode===fm);
  $('playersTable').innerHTML=visible.length?visible.map(p=>'<article class="player-card"><div class="player-avatar">'+esc((p.nickname||'?').trim().slice(0,2).toUpperCase())+'</div><div class="player-card-info"><b>'+esc(p.nickname)+'</b><small>'+p.mode+' · '+esc(p.team_name||'Sin equipo')+'</small></div><button class="small" type="button" data-profile="'+p.id+'">Ver perfil</button></article>').join(''):'<div class="empty" style="grid-column:1/-1">Todavía no hay jugadores aprobados.</div>';
  document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>showPlayerProfile(b.dataset.profile));
- renderTournamentCards();$('myRegistrations').innerHTML=user?renderMyRegistrations():'Inicia sesión para consultar tus inscripciones.';if(isAdmin)renderAdminRegistrations();
+ renderTournamentCards();$('myRegistrations').innerHTML=user?renderMyRegistrations():'Inicia sesión para consultar tus inscripciones.';
+ $('tournamentHistory').innerHTML=renderTournamentHistory();if(isAdmin)renderAdminRegistrations();
  const mode=$('rankMode').value;const rank=mode==='SOLO'?approved.filter(p=>p.mode===mode).map(p=>{const rs=results.filter(r=>r.player_id===p.id);return {...p,points:rs.reduce((s,r)=>s+r.points,0),kills:rs.reduce((s,r)=>s+r.kills,0),matches:rs.length}}).sort((a,b)=>b.points-a.points||b.kills-a.kills):teams.filter(t=>t.mode===mode).map(t=>{const rs=teamResults.filter(r=>r.team_id===t.id);return {...t,nickname:t.name,team_name:t.name,points:rs.reduce((a,r)=>a+r.points,0),kills:rs.reduce((a,r)=>a+r.kills,0),matches:rs.length}}).sort((a,b)=>b.points-a.points||b.kills-a.kills);
  const podium=rank.slice(0,3);const podiumOrder=[podium[1],podium[0],podium[2]];
  const podiumClasses=['second','first','third'],medals=['🥈','👑','🥉'],places=['2.º LUGAR','1.º LUGAR','3.º LUGAR'];
@@ -307,6 +308,10 @@ function showPlayerProfile(id){
  const avatarInput=$('avatarFile');if(avatarInput)avatarInput.addEventListener('change',e=>uploadPlayerAvatar(e.target.files[0],p.id));
  $('playerProfile').scrollIntoView({behavior:'smooth',block:'start'});
 }
+function renderTournamentHistory(){
+ const rows=[...results.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),p=players.find(x=>x.id===r.player_id);return {date:r.created_at,name:t?.name||'Torneo',mode:t?.mode||'',participant:p?.nickname||'Jugador',place:r.placement,kills:r.kills,points:r.points}}),...teamResults.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),team=teams.find(x=>x.id===r.team_id);return {date:r.created_at,name:t?.name||'Torneo',mode:t?.mode||'',participant:team?.name||'Equipo',place:r.placement,kills:r.kills,points:r.points}})].sort((a,b)=>new Date(b.date)-new Date(a.date));
+ return table(rows.slice(0,50).map(r=>'<tr><td>'+esc(r.name)+'</td><td>'+r.mode+'</td><td>'+esc(r.participant)+'</td><td>#'+r.place+'</td><td>'+r.kills+'</td><td><b>'+r.points+'</b></td></tr>'),['Torneo','Modo','Jugador / Equipo','Posición','Kills','Puntos']);
+}
 function renderTournamentCards(){
  const list=tournaments.filter(t=>t.status!=='Borrador');
  if(!list.length){$('tournamentsTable').innerHTML='<div class="empty">Todavía no hay torneos publicados.</div>';return}
@@ -321,10 +326,12 @@ function renderTournamentCards(){
   else if(profile.mode!==t.mode)action='<span class="registration-note">Tu cuenta está registrada en '+esc(profile.mode)+'.</span>';
   else if(t.mode==='SOLO')action='<button class="primary" data-register-solo="'+t.id+'">Inscribirme</button>';
   else action='<div class="registration-note">Escribe nombre de equipo y UID(s) de compañeros aprobados: '+(t.mode==='DUO'?'1':'3')+'.</div><input id="teamName-'+t.id+'" maxlength="40" placeholder="Nombre del equipo"><input id="teamUids-'+t.id+'" placeholder="'+(t.mode==='DUO'?'UID de compañero':'UID 1, UID 2, UID 3')+'"><button class="primary" data-register-team="'+t.id+'" data-mode="'+t.mode+'">Crear equipo e inscribir</button>';
+  const adminAction=isAdmin?'<button class="small" data-toggle-registration="'+t.id+'">'+(t.registration_open?'Cerrar inscripciones':'Abrir inscripciones')+'</button>':'';
   return '<article class="tournament-card"><span class="pill">'+t.mode+'</span><h4>'+esc(t.name)+'</h4><div class="tournament-meta"><span>👥 '+used+'/'+(t.max_slots||100)+' '+(t.mode==='SOLO'?'jugadores':'equipos')+'</span><span>📅 '+(t.starts_at?new Date(t.starts_at).toLocaleString('es-BO'):'Fecha por anunciar')+'</span></div><div class="registration-note">'+(t.registration_closes_at?'Cierre: '+new Date(t.registration_closes_at).toLocaleString('es-BO'):'Inscripción sin fecha de cierre')+'</div><div class="tournament-actions">'+action+'</div></article>';
  }).join('');
  document.querySelectorAll('[data-register-solo]').forEach(b=>b.onclick=()=>registerSolo(b.dataset.registerSolo));
  document.querySelectorAll('[data-register-team]').forEach(b=>b.onclick=()=>registerTeam(b.dataset.registerTeam,b.dataset.mode));
+ document.querySelectorAll('[data-toggle-registration]').forEach(b=>b.onclick=async()=>{const t=tournaments.find(x=>x.id===b.dataset.toggleRegistration);const {error}=await sb.from('tournaments').update({registration_open:!t.registration_open}).eq('id',t.id);if(error)alert(error.message);else await refresh()});
 }
 function renderMyRegistrations(){
  const mine=registrations.filter(r=>r.status!=='Cancelado'&&(r.player_id===user?.id||teams.some(t=>t.id===r.team_id)));
@@ -350,7 +357,7 @@ function renderAdmin(){
  document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=()=>changeStatus(b.dataset.approve,'Aprobado'));
  document.querySelectorAll('[data-reject]').forEach(b=>b.onclick=()=>changeStatus(b.dataset.reject,'Rechazado'));
  $('rTournament').innerHTML=tournaments.filter(t=>t.status!=='Borrador').map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
- $('rPlayer').innerHTML=players.filter(p=>p.status==='Aprobado').map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · '+p.mode+'</option>').join('');
+ $('rPlayer').innerHTML=players.filter(p=>p.status==='Aprobado').map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · '+p.mode+'</option>').join(''); $('exportResultsBtn').onclick=()=>{const rows=[['torneo','modalidad','participante','posicion','kills','puntos'],...results.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,'SOLO',players.find(p=>p.id===r.player_id)?.nickname,r.placement,r.kills,r.points]),...teamResults.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,teams.find(t=>t.id===r.team_id)?.mode,teams.find(t=>t.id===r.team_id)?.name,r.placement,r.kills,r.points])];const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='scrims-rtg-resultados.csv';a.click();URL.revokeObjectURL(a.href)};
 }
 async function changeStatus(id,status){const {error}=await sb.from('profiles').update({status}).eq('id',id);if(error)alert(error.message);else await refresh()}
 async function sessionChanged(){
