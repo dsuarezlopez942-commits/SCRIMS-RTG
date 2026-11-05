@@ -196,6 +196,8 @@ button,.tab{min-height:42px}
  .podium-card,.podium-card.first{min-height:unset!important}
  .profile-head{align-items:center}
 }
+
+.tournament-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.tournament-card{border:1px solid #34343c;border-radius:14px;padding:17px;background:linear-gradient(145deg,#19191f,#101014)}.tournament-card h4{font-size:17px;margin:8px 0}.tournament-meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;color:#b6b6c0;font-size:12px}.tournament-actions{display:grid;gap:9px;margin-top:14px}.registration-note{font-size:12px;color:#a1a1aa}.admin-list{margin-top:12px;padding:12px;border:1px solid #303039;border-radius:10px}@media(max-width:700px){.tournament-grid{grid-template-columns:1fr}.tournament-card{padding:14px}}
 </style>
 </head>
 <body>
@@ -225,14 +227,14 @@ button,.tab{min-height:42px}
 <div class="card half"><h3>Iniciar sesión</h3><form id="loginForm"><label>Correo electrónico<input id="liEmail" type="email" autocomplete="email" required></label><label>Contraseña<input id="liPassword" type="password" autocomplete="current-password" required></label><button class="primary">Entrar</button><div id="loginMsg" aria-live="polite"></div></form><button id="logoutBtn" class="danger hidden" type="button">Cerrar sesión</button><p class="muted">Si acabas de registrarte, revisa tu bandeja de entrada y confirma tu correo antes de iniciar sesión.</p></div>
 </section>
 <section id="jugadores" class="view hidden"><div class="card"><h3>Directorio de jugadores aprobados</h3><div class="actions" style="margin-bottom:12px"><select id="filterMode" style="max-width:180px"><option value="TODOS">Todas las modalidades</option><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></div><div id="playersTable" class="player-directory"><div class="empty">Cargando…</div></div><div id="playerProfile" class="profile-panel hidden" aria-live="polite"></div></div></section>
-<section id="torneos" class="view hidden"><div class="card"><h3>Torneos</h3><div id="tournamentsTable" class="empty">Cargando…</div></div></section>
+<section id="torneos" class="view hidden"><div class="card"><h3>Torneos disponibles</h3><p class="muted">Inscríbete en SOLO o registra a tu equipo en DUO/SQUAD.</p><div id="tournamentsTable" class="tournament-grid"><div class="empty">Cargando torneos…</div></div><div class="admin-list"><h3>Mis inscripciones</h3><div id="myRegistrations" class="empty">Inicia sesión para consultar tus inscripciones.</div></div></div></section>
 <section id="clasificacion" class="view hidden"><div class="card"><h3>Tabla de clasificación</h3><label style="max-width:180px;margin-bottom:12px">Modalidad<select id="rankMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><div id="rankingPodium" class="rank-podium"><div class="empty">Cargando podio…</div></div><div id="rankingTable" class="empty">Cargando…</div><p class="muted">Los puntos se acumulan a partir de los resultados registrados por el administrador.</p></div></section>
 <section id="admin" class="view grid hidden">
 <div class="card"><h3>Panel administrativo</h3><div id="adminGate" class="muted">Inicia sesión con tu cuenta de administrador para acceder a las herramientas.</div><div id="adminPanel" class="hidden">
 <h3>Solicitudes de jugadores</h3><div id="pendingTable" class="empty">Cargando…</div>
-<div class="row" style="margin-top:22px"><div><h3>Crear torneo</h3><form id="tournamentForm"><label>Nombre del torneo<input id="tName" maxlength="80" required placeholder="Ej. SCRIMS RTG #1"></label><label>Modalidad<select id="tMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label>Fecha y hora (opcional)<input id="tDate" type="datetime-local"></label><button class="primary">Crear torneo</button><div id="tournamentMsg"></div></form></div>
+<div class="row" style="margin-top:22px"><div><h3>Crear torneo</h3><form id="tournamentForm"><label>Nombre del torneo<input id="tName" maxlength="80" required placeholder="Ej. SCRIMS RTG #1"></label><label>Modalidad<select id="tMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label>Fecha y hora (opcional)<input id="tDate" type="datetime-local"></label><label>Cupo máximo (jugadores o equipos)<input id="tSlots" type="number" min="1" max="1000" value="100" required></label><label>Cierre de inscripciones (opcional)<input id="tClose" type="datetime-local"></label><button class="primary">Crear torneo</button><div id="tournamentMsg"></div></form></div>
 <div><h3>Cargar resultado</h3><form id="resultForm"><label>Torneo<select id="rTournament" required></select></label><label>Jugador aprobado<select id="rPlayer" required></select></label><div class="row"><label>Posición final<input id="rPlacement" type="number" min="1" max="100" value="1" required></label><label>Kills<input id="rKills" type="number" min="0" value="0" required></label></div><label id="manualPointsLabel">Puntos manuales (DUO/SQUAD)<input id="rPoints" type="number" min="0" value="0"></label><div class="notice" id="scoreHint">SOLO: se calcula automáticamente según la tabla de posiciones y 2 puntos por kill hasta 10 kills.</div><button class="primary">Guardar resultado</button><div id="resultMsg"></div></form></div></div>
-<div class="actions" style="margin-top:18px"><button id="exportBtn" class="small">Exportar jugadores CSV</button></div>
+<div class="admin-list"><h3>Inscripciones recibidas</h3><div id="adminRegistrations" class="empty">Cargando inscripciones…</div></div><div class="actions" style="margin-top:18px"><button id="exportBtn" class="small">Exportar jugadores CSV</button><button id="exportResultsBtn" class="small">Exportar resultados CSV</button></div>
 </div></div>
 <div class="card half"><h3>Reglas de puntuación SOLO</h3><p class="muted">Kills: 2 puntos por eliminación, hasta la kill 10.</p><p class="muted">Posición: Top 25=1, 24=2, 23=3, 22=4, 21=5, 20=6, 19=7, 18=8, 17=10, 16=11, 15=14, 14=16, 13=18, 12=20, 11=22, 10=24, 9=28, 8=32, 7=36, 6=40, 5=45, 4=50, 3=55, 2=60, 1=65.</p><p class="muted">DUO y SQUAD quedan con puntos manuales hasta que confirmes sus reglas.</p></div>
 </section>
@@ -242,7 +244,7 @@ button,.tab{min-height:42px}
 <script>
 (function(){
 const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sb=null,user=null,profile=null,isAdmin=false,players=[],tournaments=[],results=[];
+let sb=null,user=null,profile=null,isAdmin=false,players=[],tournaments=[],results=[],registrations=[],teams=[],registrationCounts={};
 function msg(id,text,error=false){const el=$(id);el.className=error?'status error':'status';el.textContent=text}
 function nav(view){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==view));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===view));if(view==='jugadores'||view==='clasificacion'||view==='torneos'||view==='admin')refresh();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.view)));
