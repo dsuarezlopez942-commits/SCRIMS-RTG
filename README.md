@@ -6,11 +6,25 @@ Plataforma web para scrims y torneos de **Creative Destruction**.
 
 - `index.html`: interfaz conectada a Supabase Auth y a las tablas de perfiles, torneos y resultados.
 - `config.js`: URL del proyecto y publishable key pública de Supabase.
-- `supabase/schema.sql`: esquema PostgreSQL y políticas Row Level Security (RLS).
+- `supabase/schema.sql`: tablas base, autenticación y políticas Row Level Security (RLS).
+- `supabase/tournament-system.sql`: equipos, invitaciones, inscripciones, cupos y resultados DUO/SQUAD.
+- `supabase/notifications.sql`: notificaciones y avisos automáticos.
+- `supabase/avatar-setup.sql`: almacenamiento y permisos de avatares.
 
-## Publicación pendiente
+## Preparación de Supabase
 
-El sitio todavía debe desplegarse en un hosting estático, por ejemplo Cloudflare Pages, conectado al repositorio GitHub.
+En Supabase > SQL Editor, ejecuta los archivos en este orden, cada uno completo y una sola vez cuando corresponda:
+
+1. `supabase/schema.sql`
+2. `supabase/tournament-system.sql`
+3. `supabase/notifications.sql`
+4. `supabase/avatar-setup.sql`
+
+Si la base de datos ya está configurada, no vuelvas a ejecutar migraciones a ciegas: revisa primero qué tablas, columnas, funciones y políticas ya existen. Los cambios nuevos de seguridad de `notifications.sql` y `tournament-system.sql` también deben aplicarse en el proyecto Supabase para que tengan efecto en producción.
+
+## Publicación
+
+El repositorio contiene el sitio estático. La publicación pública debe verificarse en el proveedor de hosting (por ejemplo, Cloudflare Pages) y confirmarse con una prueba de la URL HTTPS; guardar cambios en GitHub no demuestra por sí solo que el sitio ya esté desplegado.
 
 ## Primer administrador
 
