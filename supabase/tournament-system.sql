@@ -252,3 +252,76 @@ $$;
 
 revoke all on function public.accept_team_invite(uuid) from public;
 grant execute on function public.accept_team_invite(uuid) to authenticated;
+
+
+-- Endurecimiento previo al lanzamiento: validar el torneo y los cupos
+-- también cuando el último compañero acepta una invitación.
+create or replace function public.accept_team_invite(target_invite uuid)
+returns void language plpgsql security definer set search_path = public
+as $$
+declare
+ inv public.scrim_team_invites%rowtype;
+ tm public.scrim_teams%rowtype;
+ p public.profiles%rowtype;
+ t public.tournaments%rowtype;
+ expected integer;
+ current_count integer;
+ used_slots integer;
+begin
+ if auth.uid() is null then raise exception 'Inicia sesión para aceptar la invitación.'; end if;
+
+ select * into inv
+ from public.scrim_team_invites
+ where id=target_invite and invitee_id=auth.uid()
+ for update;
+ if not found or inv.status<>'Pendiente' then
+  raise exception 'La invitación no existe o ya fue respondida.';
+ end if;
+
+ select * into tm from public.scrim_teams where id=inv.team_id for update;
+ if not found or tm.tournament_id is null then
+  raise exception 'No se encontró el torneo de este equipo.';
+ end if;
+
+ -- Bloquea el torneo para evitar sobrepasar cupos con aceptaciones simultáneas.
+ select * into t from public.tournaments where id=tm.tournament_id for update;
+ if not found or t.status<>'Abierto' or not t.registration_open
+    or (t.registration_closes_at is not null and now()>t.registration_closes_at) then
+  raise exception 'Las inscripciones de este torneo están cerradas.';
+ end if;
+
+ select * into p from public.profiles where id=auth.uid();
+ if not found or p.status<>'Aprobado' or p.mode<>tm.mode then
+  raise exception 'Tu cuenta aprobada debe coincidir con la modalidad del equipo.';
+ end if;
+
+ if exists(
+  select 1 from public.scrim_team_members m
+  join public.scrim_teams st on st.id=m.team_id
+  where m.player_id=p.id and st.tournament_id=tm.tournament_id
+ ) then
+  raise exception 'Ya perteneces a otro equipo en este torneo.';
+ end if;
+
+ insert into public.scrim_team_members(team_id,player_id) values(tm.id,p.id);
+ update public.scrim_team_invites set status='Aceptada' where id=inv.id;
+
+ expected:=case when tm.mode='DUO' then 2 else 4 end;
+ select count(*) into current_count from public.scrim_team_members where team_id=tm.id;
+
+ if current_count=expected then
+  select count(*) into used_slots
+  from public.tournament_registrations
+  where tournament_id=t.id and status<>'Cancelado';
+
+  if used_slots>=t.max_slots then
+   raise exception 'El torneo alcanzó su cupo máximo antes de completar el equipo.';
+  end if;
+
+  insert into public.tournament_registrations(tournament_id,team_id) values(t.id,tm.id);
+ end if;
+end;
+$$;
+
+revoke all on function public.accept_team_invite(uuid) from public;
+grant execute on function public.accept_team_invite(uuid) to authenticated;
