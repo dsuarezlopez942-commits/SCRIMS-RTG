@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "SCRIMS RTG — CUBEX POINTS MANAGER",
+  "short_name": "SCRIMS RTG",
+  "description": "Plataforma de scrims, torneos y clasificación de Creative Destruction.",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/logo-rtg.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
