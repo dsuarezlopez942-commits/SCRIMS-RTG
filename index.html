@@ -336,13 +336,24 @@ function renderTournamentCards(){
   else if(profile.mode!==t.mode)action='<span class="registration-note">Tu cuenta está registrada en '+esc(profile.mode)+'.</span>';
   else if(t.mode==='SOLO')action='<button class="primary" data-register-solo="'+t.id+'">Inscribirme</button>';
   else action='<div class="registration-note">Crea el equipo e invita a compañeros aprobados. Cada invitado debe aceptar: '+(t.mode==='DUO'?'1':'3')+'.</div><input id="teamName-'+t.id+'" maxlength="40" placeholder="Nombre del equipo"><input id="teamUids-'+t.id+'" placeholder="'+(t.mode==='DUO'?'UID de compañero':'UID 1, UID 2, UID 3')+'"><button class="primary" data-register-team="'+t.id+'" data-mode="'+t.mode+'">Crear equipo e inscribir</button>';
-  const adminAction=isAdmin?'<button class="small" data-toggle-registration="'+t.id+'">'+(t.registration_open?'Cerrar inscripciones':'Abrir inscripciones')+'</button>':'';
+  const adminAction=isAdmin?'<button class="small" data-toggle-registration="'+t.id+'">'+(t.registration_open?'Cerrar inscripciones':'Abrir inscripciones')+'</button><button class="small danger" data-delete-tournament="'+t.id+'">Eliminar torneo</button>':'';
   return '<article class="tournament-card"><span class="pill">'+t.mode+'</span><h4>'+esc(t.name)+'</h4><div class="tournament-meta"><span>👥 '+used+'/'+(t.max_slots||100)+' '+(t.mode==='SOLO'?'jugadores':'equipos')+'</span><span>📅 '+(t.starts_at?new Date(t.starts_at).toLocaleString('es-BO'):'Fecha por anunciar')+'</span></div><div class="registration-note">'+(t.registration_closes_at?'Cierre: '+new Date(t.registration_closes_at).toLocaleString('es-BO'):'Inscripción sin fecha de cierre')+'</div><div class="tournament-actions">'+action+adminAction+'</div></article>';
  }).join('');
  document.querySelectorAll('[data-register-solo]').forEach(b=>b.onclick=()=>registerSolo(b.dataset.registerSolo));
  document.querySelectorAll('[data-register-team]').forEach(b=>b.onclick=()=>registerTeam(b.dataset.registerTeam,b.dataset.mode));
  document.querySelectorAll('[data-accept-invite]').forEach(b=>b.onclick=()=>acceptTeamInvite(b.dataset.acceptInvite));
  document.querySelectorAll('[data-toggle-registration]').forEach(b=>b.onclick=async()=>{const t=tournaments.find(x=>x.id===b.dataset.toggleRegistration);const {error}=await sb.from('tournaments').update({registration_open:!t.registration_open}).eq('id',t.id);if(error)alert(error.message);else await refresh()});
+ document.querySelectorAll('[data-delete-tournament]').forEach(b=>b.onclick=async()=>{
+  const t=tournaments.find(x=>x.id===b.dataset.deleteTournament);
+  if(!t)return;
+  const typed=prompt('Vas a eliminar definitivamente el torneo: '+t.name+'\\nTambién se borrarán sus inscripciones, equipos e historial relacionado.\\n\\nEscribe ELIMINAR para confirmar:');
+  if(typed!=='ELIMINAR')return;
+  b.disabled=true;
+  const {error}=await sb.from('tournaments').delete().eq('id',t.id);
+  if(error){alert('No se pudo eliminar el torneo: '+error.message);b.disabled=false;return}
+  alert('Torneo eliminado correctamente.');
+  await refresh();
+ });
 }
 function renderMyRegistrations(){
  const mine=registrations.filter(r=>r.status!=='Cancelado'&&(r.player_id===user?.id||myTeamIds.includes(r.team_id)));
