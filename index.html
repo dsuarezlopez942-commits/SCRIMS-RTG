@@ -241,7 +241,7 @@ button,.tab{min-height:42px}
 <main>
 <section class="hero"><img class="hero-banner" src="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png" alt="Banner de SCRIMS RTG con personaje de Creative Destruction"><div class="eyebrow">COMPETITIVE ARENA</div><h2>DOMINA LA <span>CLASIFICACIÓN.</span></h2><p>Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.</p></section>
 <div class="card" id="connectionCard"><b>Conectando con SCRIMS RTG…</b><div class="muted" id="connectionText">Comprobando conexión segura con la base de datos.</div></div>
-<nav id="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="cuenta">Registro / Acceso</button><button class="tab" data-view="jugadores">Jugadores</button><button class="tab" data-view="torneos">Torneos</button><button class="tab" data-view="clasificacion">Clasificación</button><button class="tab" data-view="notificaciones">Notificaciones <span id="notificationBadge"></span></button><button class="tab" data-view="admin">Administrador</button></nav>
+<nav id="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="cuenta">Registro / Acceso</button><button class="tab" data-view="jugadores">Jugadores</button><button class="tab" data-view="torneos">Torneos</button><button class="tab" data-view="clasificacion">Clasificación</button><button class="tab" data-view="notificaciones">Notificaciones <span id="notificationBadge"></span></button><button class="tab hidden" id="adminTab" data-view="admin">Administrador</button></nav>
 <section id="inicio" class="view grid">
 <div class="card"><h3>Panel de competencia</h3><div class="stats"><div class="stat"><b id="countPlayers">0</b><span>Jugadores aprobados</span></div><div class="stat"><b id="countTournaments">0</b><span>Torneos publicados</span></div><div class="stat"><b id="countResults">0</b><span>Resultados cargados</span></div></div></div>
 <div class="card"><h3>Elige tu modalidad</h3><p class="muted">Selecciona cómo quieres competir en SCRIMS RTG.</p><div class="mode-grid">
@@ -292,7 +292,7 @@ button,.tab{min-height:42px}
 <h3>Solicitudes de jugadores</h3><div id="pendingTable" class="empty">Cargando…</div>
 <div class="row" style="margin-top:22px"><div><h3>Crear torneo</h3><form id="tournamentForm"><label>Nombre del torneo<input id="tName" maxlength="80" required placeholder="Ej. SCRIMS RTG #1"></label><label>Modalidad<select id="tMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label>Fecha y hora (opcional)<input id="tDate" type="datetime-local"></label><label>Cupo máximo (jugadores o equipos)<input id="tSlots" type="number" min="1" max="1000" value="100" required></label><label>Cierre de inscripciones (opcional)<input id="tClose" type="datetime-local"></label><button class="primary">Crear torneo</button><div id="tournamentMsg"></div></form></div>
 <div><h3>Cargar resultado</h3><form id="resultForm"><label>Torneo<select id="rTournament" required></select></label><label>Jugador aprobado<select id="rPlayer" required></select></label><div class="row"><label>Posición final<input id="rPlacement" type="number" min="1" max="100" value="1" required></label><label>Kills<input id="rKills" type="number" min="0" value="0" required></label></div><label id="manualPointsLabel">Puntos manuales (DUO/SQUAD)<input id="rPoints" type="number" min="0" value="0"></label><div class="notice" id="scoreHint">SOLO: se calcula automáticamente según la tabla de posiciones y 2 puntos por kill hasta 10 kills.</div><button class="primary">Guardar resultado</button><div id="resultMsg"></div></form></div></div>
-<div class="admin-list"><h3>Cargar resultado de equipo (DUO/SQUAD)</h3><form id="teamResultForm"><label>Torneo<select id="trTournament" required></select></label><label>Equipo inscrito<select id="trTeam" required></select></label><div class="row"><label>Posición final<input id="trPlacement" type="number" min="1" value="1" required></label><label>Kills del equipo<input id="trKills" type="number" min="0" value="0" required></label></div><label>Puntos manuales del equipo<input id="trPoints" type="number" min="0" value="0" required></label><button class="primary">Guardar resultado de equipo</button><div id="teamResultMsg"></div></form><p class="muted">Los puntos DUO/SQUAD se cargan manualmente según las reglas oficiales del torneo.</p></div><div class="admin-list"><h3>Inscripciones recibidas</h3><div id="adminRegistrations" class="empty">Cargando inscripciones…</div></div><div class="actions" style="margin-top:18px"><button id="exportBtn" class="small">Exportar jugadores CSV</button><button id="exportResultsBtn" class="small">Exportar resultados CSV</button></div>
+<div class="admin-list"><h3>Cargar resultado de equipo (DUO/SQUAD)</h3><form id="teamResultForm"><label>Torneo<select id="trTournament" required></select></label><label>Equipo inscrito<select id="trTeam" required></select></label><div class="row"><label>Posición final<input id="trPlacement" type="number" min="1" value="1" required></label><label>Kills del equipo<input id="trKills" type="number" min="0" value="0" required></label></div><label>Puntos manuales del equipo<input id="trPoints" type="number" min="0" value="0" required></label><button class="primary">Guardar resultado de equipo</button><div id="teamResultMsg"></div></form><p class="muted">Los puntos DUO/SQUAD se cargan manualmente según las reglas oficiales del torneo.</p></div><div class="admin-list"><h3>Inscripciones recibidas</h3><div id="adminRegistrations" class="empty">Cargando inscripciones…</div></div><div class="admin-list" id="adminManagement"><h3>Administración de administradores</h3><p class="muted">Solo los administradores pueden acceder a este apartado. Asigna o retira permisos a jugadores con cuenta aprobada.</p><div class="row"><label>Jugador aprobado<select id="adminCandidate"><option value="">Selecciona un jugador</option></select></label><div style="display:flex;align-items:end"><button type="button" class="primary" id="grantAdminBtn">Convertir en administrador</button></div></div><div id="adminManagementMsg" class="muted" aria-live="polite"></div><h4 style="margin:18px 0 8px">Administradores actuales</h4><div id="adminsTable" class="empty">Cargando administradores…</div><p class="muted">Por seguridad, no puedes quitarte tu propio rol ni retirar el último administrador.</p></div><div class="actions" style="margin-top:18px"><button id="exportBtn" class="small">Exportar jugadores CSV</button><button id="exportResultsBtn" class="small">Exportar resultados CSV</button></div>
 </div></div>
 <div class="card half"><h3>Reglas de puntuación SOLO</h3><p class="muted">Kills: 2 puntos por eliminación, hasta la kill 10.</p><p class="muted">Posición: Top 25=1, 24=2, 23=3, 22=4, 21=5, 20=6, 19=7, 18=8, 17=10, 16=11, 15=14, 14=16, 13=18, 12=20, 11=22, 10=24, 9=28, 8=32, 7=36, 6=40, 5=45, 4=50, 3=55, 2=60, 1=65.</p><p class="muted">DUO y SQUAD quedan con puntos manuales hasta que confirmes sus reglas.</p></div>
 </section>
@@ -439,6 +439,7 @@ function renderAdminRegistrations(){
  document.querySelectorAll('[data-cancel-reg]').forEach(b=>b.onclick=async()=>{if(!confirm('¿Cancelar esta inscripción?'))return;const {error}=await sb.from('tournament_registrations').update({status:'Cancelado'}).eq('id',b.dataset.cancelReg);if(error)alert(error.message);else await refresh()});
 }
 function renderAdmin(){
+ renderAdminManagement();
  $('trTournament').innerHTML=tournaments.filter(t=>t.status!=='Borrador'&&t.mode!=='SOLO').map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
  $('trTeam').innerHTML=teams.map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
  const pending=players.filter(p=>p.status==='Pendiente');
@@ -448,11 +449,39 @@ function renderAdmin(){
  $('rTournament').innerHTML=tournaments.filter(t=>t.status!=='Borrador').map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
  $('rPlayer').innerHTML=players.filter(p=>p.status==='Aprobado').map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · '+p.mode+'</option>').join(''); $('exportResultsBtn').onclick=()=>{const rows=[['torneo','modalidad','participante','posicion','kills','puntos'],...results.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,'SOLO',players.find(p=>p.id===r.player_id)?.nickname,r.placement,r.kills,r.points]),...teamResults.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,teams.find(t=>t.id===r.team_id)?.mode,teams.find(t=>t.id===r.team_id)?.name,r.placement,r.kills,r.points])];const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='scrims-rtg-resultados.csv';a.click();URL.revokeObjectURL(a.href)};
 }
+function renderAdminManagement(){
+ const candidates=players.filter(p=>p.status==='Aprobado'&&p.role!=='admin');
+ $('adminCandidate').innerHTML='<option value="">Selecciona un jugador</option>'+candidates.map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · '+esc(p.game_uid)+' · '+p.mode+'</option>').join('');
+ const admins=players.filter(p=>p.role==='admin').sort((a,b)=>String(a.nickname).localeCompare(String(b.nickname)));
+ $('adminsTable').innerHTML=table(admins.map(p=>'<tr><td><b>'+esc(p.nickname)+'</b><br><small>'+esc(p.game_uid)+'</small></td><td>'+p.mode+'</td><td><span class="pill ok">Administrador</span></td><td>'+(p.id===user?.id?'<span class="muted">Tu cuenta</span>':'<button type="button" class="small danger" data-revoke-admin="'+p.id+'">Quitar permisos</button>')+'</td></tr>'),['Administrador','Modalidad','Rol','Acción']);
+ document.querySelectorAll('[data-revoke-admin]').forEach(b=>b.onclick=async()=>{
+  const target=admins.find(p=>p.id===b.dataset.revokeAdmin);
+  if(!target||!confirm('¿Quitar el rol de administrador a '+target.nickname+'?'))return;
+  b.disabled=true;
+  const {error}=await sb.rpc('set_scrims_admin_role',{target_profile:target.id,make_admin:false});
+  if(error){$('adminManagementMsg').textContent=error.message;b.disabled=false;return}
+  $('adminManagementMsg').textContent='Permisos administrativos retirados correctamente.';
+  await refresh();
+ });
+}
+$('grantAdminBtn').addEventListener('click',async()=>{
+ const id=$('adminCandidate').value;
+ if(!id){$('adminManagementMsg').textContent='Selecciona un jugador aprobado.';return}
+ const target=players.find(p=>p.id===id);
+ if(!target||target.status!=='Aprobado'||target.role==='admin'){$('adminManagementMsg').textContent='El jugador seleccionado ya no puede recibir permisos.';return}
+ if(!confirm('¿Convertir a '+target.nickname+' en administrador de SCRIMS RTG? Tendrá acceso completo al panel administrativo.'))return;
+ const button=$('grantAdminBtn');button.disabled=true;
+ const {error}=await sb.rpc('set_scrims_admin_role',{target_profile:id,make_admin:true});
+ button.disabled=false;
+ if(error){$('adminManagementMsg').textContent=error.message;return}
+ $('adminManagementMsg').textContent='Administrador agregado correctamente.';
+ await refresh();
+});
 async function changeStatus(id,status){const {error}=await sb.from('profiles').update({status}).eq('id',id);if(error)alert(error.message);else await refresh()}
 async function sessionChanged(){
  const {data}=await sb.auth.getUser();user=data.user||null;profile=null;isAdmin=false;
- if(user){const {data:p,error}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();if(!error)profile=p;isAdmin=profile?.role==='admin';$('sessionInfo').textContent=user.email+' · '+(isAdmin?'Administrador':profile?.status||'Cuenta registrada');$('adminGate').textContent=isAdmin?'Acceso administrativo habilitado.':'Tu cuenta no tiene permisos de administrador.';$('adminPanel').classList.toggle('hidden',!isAdmin);$('logoutBtn').classList.remove('hidden');}
- else{$('sessionInfo').textContent='No has iniciado sesión.';$('adminGate').textContent='Inicia sesión con tu cuenta de administrador para acceder a las herramientas.';$('adminPanel').classList.add('hidden');$('logoutBtn').classList.add('hidden')}
+ if(user){const {data:p,error}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();if(!error)profile=p;isAdmin=profile?.role==='admin';$('sessionInfo').textContent=user.email+' · '+(isAdmin?'Administrador':profile?.status||'Cuenta registrada');$('adminGate').textContent=isAdmin?'Acceso administrativo habilitado.':'Tu cuenta no tiene permisos de administrador.';$('adminPanel').classList.toggle('hidden',!isAdmin);$('adminTab').classList.toggle('hidden',!isAdmin);$('logoutBtn').classList.remove('hidden');}
+ else{$('sessionInfo').textContent='No has iniciado sesión.';$('adminGate').textContent='Inicia sesión con tu cuenta de administrador para acceder a las herramientas.';$('adminPanel').classList.add('hidden');$('adminTab').classList.add('hidden');$('logoutBtn').classList.add('hidden')}
  await refresh();
 }
 $('signupForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;const email=$('suEmail').value.trim(),password=$('suPassword').value;if(password.length<8){msg('signupMsg','La contraseña debe tener al menos 8 caracteres.',true);return}
