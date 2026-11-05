@@ -220,7 +220,7 @@ async function uploadPlayerAvatar(file,playerId){
  if(uploadError){alert('No se pudo subir el avatar: '+uploadError.message);return}
  const {data}=sb.storage.from('player-avatars').getPublicUrl(path);
  const avatarUrl=data.publicUrl+'?v='+Date.now();
- const {error:updateError}=await sb.from('profiles').update({avatar_url:avatarUrl}).eq('id',user.id);
+ const {error:updateError}=await sb.rpc('set_my_avatar_url',{new_avatar_url:avatarUrl});
  if(updateError){alert('La imagen se subió, pero no se pudo guardar el perfil: '+updateError.message);return}
  await refresh();showPlayerProfile(playerId);alert('¡Avatar actualizado correctamente!');
 }
