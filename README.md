@@ -31,14 +31,14 @@ El repositorio contiene el sitio estático. La publicación pública debe verifi
 1. Publica el sitio y abre su URL.
 2. Registra una cuenta con el correo que será administrador.
 3. Confirma el correo y entra a la plataforma.
-4. En Supabase > SQL Editor ejecuta esta consulta, sustituyendo el correo si corresponde:
+4. En Supabase > SQL Editor ejecuta esta consulta, sustituyendo `TU_CORREO_ADMIN` por el correo de la cuenta administradora:
 
 ```sql
 update public.profiles p
 set role = 'admin'
 from auth.users u
 where p.id = u.id
-  and u.email = 'dsuarezlopez942@gmail.com';
+  and u.email = 'TU_CORREO_ADMIN';
 ```
 
 5. Cierra sesión y vuelve a iniciar sesión para que la aplicación detecte el rol actualizado.
