@@ -126,6 +126,11 @@ footer{color:#71717a;text-align:center;padding:28px;font-size:11px;letter-spacin
 .profile-stat{background:#0b0b0e;border:1px solid #29292f;border-radius:12px;padding:13px}
 .profile-stat b{display:block;font-size:23px}.profile-stat span{font-size:10px;color:#a1a1aa;text-transform:uppercase;letter-spacing:1px}
 @media(max-width:620px){.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-head{align-items:flex-start}.profile-avatar{width:62px;height:62px;flex-basis:62px}}
+
+.player-avatar.has-photo,.profile-avatar.has-photo{background-size:cover;background-position:center;color:transparent;border:1px solid #ffffff30}
+.avatar-upload{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 18px}
+.avatar-upload input{max-width:280px;padding:8px;font-size:12px}
+.avatar-note{font-size:11px;color:#a1a1aa}
 </style>
 </head>
 <body>
@@ -204,14 +209,30 @@ async function refresh(){
  $('rankingTable').innerHTML=table(rank.map((p,i)=>'<tr><td><span class="rank-number">'+(i+1)+'</span></td><td><span class="rank-player">'+esc(p.nickname)+'</span><span class="rank-sub">'+esc(p.team_name||p.mode)+'</span></td><td><b>'+p.points+'</b></td><td>'+p.kills+'</td><td>'+p.matches+'</td></tr>'),['Posición','Jugador / Equipo','Puntos','Kills','Partidas']);
  if(isAdmin)renderAdmin();
 }
+async function uploadPlayerAvatar(file,playerId){
+ if(!file)return;
+ if(!user||user.id!==playerId){alert('Solo puedes cambiar tu propio avatar.');return}
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type)){alert('Usa una imagen JPG, PNG o WEBP.');return}
+ if(file.size>3*1024*1024){alert('La imagen debe pesar menos de 3 MB.');return}
+ const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const path=user.id+'/avatar.'+ext;
+ const {error:uploadError}=await sb.storage.from('player-avatars').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});
+ if(uploadError){alert('No se pudo subir el avatar: '+uploadError.message);return}
+ const {data}=sb.storage.from('player-avatars').getPublicUrl(path);
+ const avatarUrl=data.publicUrl+'?v='+Date.now();
+ const {error:updateError}=await sb.from('profiles').update({avatar_url:avatarUrl}).eq('id',user.id);
+ if(updateError){alert('La imagen se subió, pero no se pudo guardar el perfil: '+updateError.message);return}
+ await refresh();showPlayerProfile(playerId);alert('¡Avatar actualizado correctamente!');
+}
 function showPlayerProfile(id){
  const p=players.find(x=>x.id===id&&x.status==='Aprobado');if(!p)return;
  const rs=results.filter(r=>r.player_id===p.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
  const points=rs.reduce((n,r)=>n+(Number(r.points)||0),0),kills=rs.reduce((n,r)=>n+(Number(r.kills)||0),0);
  const tournamentsPlayed=rs.map(r=>tournaments.find(t=>t.id===r.tournament_id)).filter(Boolean);
  $('playerProfile').classList.remove('hidden');
- $('playerProfile').innerHTML='<div class="actions" style="justify-content:space-between;align-items:center"><span class="pill ok">PERFIL DE JUGADOR</span><button type="button" class="small" id="closePlayerProfile">Cerrar</button></div><div class="profile-head" style="margin-top:18px"><div class="profile-avatar">'+esc((p.nickname||'?').trim().slice(0,2).toUpperCase())+'</div><div class="profile-title"><h3>'+esc(p.nickname)+'</h3><div class="muted">'+p.mode+' · '+esc(p.team_name||'Sin equipo')+'</div><small class="muted">UID: '+esc(p.game_uid)+'</small></div></div><div class="profile-stats"><div class="profile-stat"><b>'+rs.length+'</b><span>Partidas</span></div><div class="profile-stat"><b>'+kills+'</b><span>Kills</span></div><div class="profile-stat"><b>'+points+'</b><span>Puntos</span></div><div class="profile-stat"><b>'+(rs.length?(kills/rs.length).toFixed(1):'0.0')+'</b><span>Kills / partida</span></div></div><h3>Historial de resultados</h3>'+ (rs.length?table(rs.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>#'+r.placement+'</td><td>'+r.kills+'</td><td><b>'+r.points+'</b></td></tr>'}),['Torneo','Posición','Kills','Puntos']):'<div class="empty">Este jugador todavía no tiene resultados registrados.</div>');
+ $('playerProfile').innerHTML='<div class="actions" style="justify-content:space-between;align-items:center"><span class="pill ok">PERFIL DE JUGADOR</span><button type="button" class="small" id="closePlayerProfile">Cerrar</button></div><div class="profile-head" style="margin-top:18px"><div class="profile-avatar '+(p.avatar_url?'has-photo':'')+'" '+(p.avatar_url?'style="background-image:url(\''+esc(p.avatar_url)+'\')"':'')+'>'+esc((p.nickname||'?').trim().slice(0,2).toUpperCase())+'</div><div class="profile-title"><h3>'+esc(p.nickname)+'</h3><div class="muted">'+p.mode+' · '+esc(p.team_name||'Sin equipo')+'</div><small class="muted">UID: '+esc(p.game_uid)+'</small></div></div>'+(user&&user.id===p.id?'<div class="avatar-upload"><label for="avatarFile">Cambiar mi avatar<input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp"></label><span class="avatar-note">JPG, PNG o WEBP · máximo 3 MB</span></div>':'');<div class="profile-stats"><div class="profile-stat"><b>'+rs.length+'</b><span>Partidas</span></div><div class="profile-stat"><b>'+kills+'</b><span>Kills</span></div><div class="profile-stat"><b>'+points+'</b><span>Puntos</span></div><div class="profile-stat"><b>'+(rs.length?(kills/rs.length).toFixed(1):'0.0')+'</b><span>Kills / partida</span></div></div><h3>Historial de resultados</h3>'+ (rs.length?table(rs.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>#'+r.placement+'</td><td>'+r.kills+'</td><td><b>'+r.points+'</b></td></tr>'}),['Torneo','Posición','Kills','Puntos']):'<div class="empty">Este jugador todavía no tiene resultados registrados.</div>');
  $('closePlayerProfile').onclick=()=>$('playerProfile').classList.add('hidden');
+ const avatarInput=$('avatarFile');if(avatarInput)avatarInput.addEventListener('change',e=>uploadPlayerAvatar(e.target.files[0],p.id));
  $('playerProfile').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderAdmin(){
