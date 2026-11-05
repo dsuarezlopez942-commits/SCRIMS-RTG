@@ -156,3 +156,21 @@ as $$
 $$;
 revoke all on function public.get_tournament_registration_counts() from public;
 grant execute on function public.get_tournament_registration_counts() to anon, authenticated;
+
+create table if not exists public.team_results (
+  id uuid primary key default gen_random_uuid(),
+  tournament_id uuid not null references public.tournaments(id) on delete cascade,
+  team_id uuid not null references public.scrim_teams(id) on delete cascade,
+  placement integer not null default 0 check (placement >= 0),
+  kills integer not null default 0 check (kills >= 0),
+  points integer not null default 0 check (points >= 0),
+  created_at timestamptz not null default now(),
+  unique (tournament_id, team_id)
+);
+alter table public.team_results enable row level security;
+grant select on public.team_results to anon, authenticated;
+grant insert, update, delete on public.team_results to authenticated;
+drop policy if exists "Public can view team results" on public.team_results;
+create policy "Public can view team results" on public.team_results for select to anon, authenticated using (true);
+drop policy if exists "Admins manage team results" on public.team_results;
+create policy "Admins manage team results" on public.team_results for all to authenticated using (public.is_scrims_admin()) with check (public.is_scrims_admin());
