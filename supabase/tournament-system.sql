@@ -174,3 +174,81 @@ drop policy if exists "Public can view team results" on public.team_results;
 create policy "Public can view team results" on public.team_results for select to anon, authenticated using (true);
 drop policy if exists "Admins manage team results" on public.team_results;
 create policy "Admins manage team results" on public.team_results for all to authenticated using (public.is_scrims_admin()) with check (public.is_scrims_admin());
+
+
+-- Invitaciones con aceptación explícita de cada compañero.
+alter table public.scrim_teams add column if not exists tournament_id uuid references public.tournaments(id) on delete cascade;
+alter table public.scrim_team_members drop constraint if exists scrim_team_members_player_id_key;
+
+create table if not exists public.scrim_team_invites (
+ id uuid primary key default gen_random_uuid(),
+ team_id uuid not null references public.scrim_teams(id) on delete cascade,
+ invitee_id uuid not null references public.profiles(id) on delete cascade,
+ status text not null default 'Pendiente' check (status in ('Pendiente','Aceptada','Rechazada')),
+ created_at timestamptz not null default now(),
+ unique(team_id,invitee_id)
+);
+alter table public.scrim_team_invites enable row level security;
+grant select on public.scrim_team_invites to authenticated;
+drop policy if exists "Players see their team invitations" on public.scrim_team_invites;
+create policy "Players see their team invitations" on public.scrim_team_invites
+for select to authenticated using (
+ invitee_id=auth.uid() or exists(select 1 from public.scrim_teams t where t.id=team_id and t.captain_id=auth.uid()) or public.is_scrims_admin()
+);
+
+create or replace function public.create_and_register_team(target_tournament uuid, team_name text, teammate_uids text[])
+returns uuid language plpgsql security definer set search_path = public
+as $$
+declare t public.tournaments%rowtype; captain public.profiles%rowtype; teammate public.profiles%rowtype; new_team uuid; expected integer; uid text; used_slots integer;
+begin
+ if auth.uid() is null then raise exception 'Inicia sesión para crear el equipo.'; end if;
+ select * into captain from public.profiles where id=auth.uid();
+ if not found or captain.status<>'Aprobado' then raise exception 'Tu cuenta debe estar aprobada.'; end if;
+ select * into t from public.tournaments where id=target_tournament for update;
+ if not found or t.status<>'Abierto' or not t.registration_open then raise exception 'Este torneo no está abierto a inscripciones.'; end if;
+ if t.registration_closes_at is not null and now()>t.registration_closes_at then raise exception 'Las inscripciones están cerradas.'; end if;
+ if t.mode not in ('DUO','SQUAD') or captain.mode<>t.mode then raise exception 'La modalidad de tu cuenta no coincide con el torneo.'; end if;
+ expected:=case when t.mode='DUO' then 2 else 4 end;
+ if coalesce(array_length(teammate_uids,1),0)<>expected-1 then raise exception 'Debes indicar exactamente '||(expected-1)||' UID(s) de compañero(s).'; end if;
+ if length(trim(coalesce(team_name,'')))<2 then raise exception 'Escribe un nombre de equipo válido.'; end if;
+ select count(*) into used_slots from public.tournament_registrations where tournament_id=t.id and status<>'Cancelado';
+ if used_slots>=t.max_slots then raise exception 'El torneo ya alcanzó su cupo máximo.'; end if;
+ if exists(select 1 from public.scrim_team_members m join public.scrim_teams st on st.id=m.team_id where m.player_id=captain.id and st.tournament_id=t.id) then raise exception 'Ya perteneces a un equipo de este torneo.'; end if;
+ insert into public.scrim_teams(name,mode,captain_id,tournament_id) values(trim(team_name),t.mode,captain.id,t.id) returning id into new_team;
+ insert into public.scrim_team_members(team_id,player_id) values(new_team,captain.id);
+ foreach uid in array teammate_uids loop
+  select * into teammate from public.profiles where game_uid=trim(uid) and mode=t.mode and status='Aprobado';
+  if not found then raise exception 'No se encontró un compañero aprobado con UID: %',uid; end if;
+  if teammate.id=captain.id then raise exception 'No puedes invitarte a ti mismo.'; end if;
+  if exists(select 1 from public.scrim_team_members m join public.scrim_teams st on st.id=m.team_id where m.player_id=teammate.id and st.tournament_id=t.id) then raise exception 'Un compañero ya pertenece a otro equipo en este torneo.'; end if;
+  insert into public.scrim_team_invites(team_id,invitee_id) values(new_team,teammate.id);
+ end loop;
+ return new_team;
+exception when unique_violation then raise exception 'El nombre del equipo ya existe o hay una invitación duplicada.';
+end;
+$$;
+
+create or replace function public.accept_team_invite(target_invite uuid)
+returns void language plpgsql security definer set search_path = public
+as $$
+declare inv public.scrim_team_invites%rowtype; tm public.scrim_teams%rowtype; p public.profiles%rowtype; expected integer; current_count integer;
+begin
+ if auth.uid() is null then raise exception 'Inicia sesión para aceptar la invitación.'; end if;
+ select * into inv from public.scrim_team_invites where id=target_invite and invitee_id=auth.uid() for update;
+ if not found or inv.status<>'Pendiente' then raise exception 'La invitación no existe o ya fue respondida.'; end if;
+ select * into tm from public.scrim_teams where id=inv.team_id for update;
+ select * into p from public.profiles where id=auth.uid();
+ if p.status<>'Aprobado' or p.mode<>tm.mode then raise exception 'Tu cuenta aprobada debe coincidir con la modalidad del equipo.'; end if;
+ if exists(select 1 from public.scrim_team_members m join public.scrim_teams st on st.id=m.team_id where m.player_id=p.id and st.tournament_id=tm.tournament_id) then raise exception 'Ya perteneces a otro equipo en este torneo.'; end if;
+ insert into public.scrim_team_members(team_id,player_id) values(tm.id,p.id);
+ update public.scrim_team_invites set status='Aceptada' where id=inv.id;
+ expected:=case when tm.mode='DUO' then 2 else 4 end;
+ select count(*) into current_count from public.scrim_team_members where team_id=tm.id;
+ if current_count=expected then
+  insert into public.tournament_registrations(tournament_id,team_id) values(tm.tournament_id,tm.id);
+ end if;
+end;
+$$;
+
+revoke all on function public.accept_team_invite(uuid) from public;
+grant execute on function public.accept_team_invite(uuid) to authenticated;
