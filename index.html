@@ -497,8 +497,9 @@ function renderMyRegistrations(){
  if(!mine.length)return '<div class="empty">Todavía no tienes inscripciones activas.</div>';
  return table(mine.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),team=teams.find(x=>x.id===r.team_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>'+(team?esc(team.name):'Individual')+'</td><td><span class="pill ok">'+r.status+'</span></td></tr>'}),['Torneo','Participación','Estado']);
 }
-async function registerSolo(tid){const {error}=await sb.rpc('register_solo_tournament',{target_tournament:tid});if(error){alert(error.message);return}alert('¡Inscripción confirmada!');await refresh()}
+async function registerSolo(tid){const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session){user=null;await sessionChanged();alert('Tu sesión no está activa. Inicia sesión nuevamente para inscribirte.');return}const {error}=await sb.rpc('register_solo_tournament',{target_tournament:tid});if(error){alert(error.message);return}alert('¡Inscripción confirmada!');await refresh()}
 async function registerTeam(tid,mode){
+ const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session){user=null;await sessionChanged();alert('Tu sesión no está activa. Inicia sesión nuevamente para crear tu equipo.');return}
  const name=$('teamName-'+tid).value.trim(),uids=$('teamUids-'+tid).value.split(',').map(x=>x.trim()).filter(Boolean),needed=mode==='DUO'?1:3;
  if(!name||uids.length!==needed){alert('Escribe el nombre del equipo y exactamente '+needed+' UID(s), separados por comas.');return}
  const {error}=await sb.rpc('create_and_register_team',{target_tournament:tid,team_name:name,teammate_uids:uids});if(error){alert(error.message);return}alert('Equipo creado. La inscripción se confirmará cuando todos los compañeros acepten la invitación.');await refresh()
@@ -611,6 +612,7 @@ $('exportBtn').addEventListener('click',()=>{const rows=[['nickname','game_uid',
 $('rTournament').addEventListener('change',()=>{const t=tournaments.find(x=>x.id===$('rTournament').value);$('scoreHint').textContent=t?.mode==='SOLO'?'SOLO: puntos de posición + 2 puntos por kill hasta 10 kills.':'DUO/SQUAD: ingresa los puntos manuales según las reglas que defina el organizador.';$('manualPointsLabel').classList.toggle('hidden',t?.mode==='SOLO')});
 if(!window.SCRIMS_CONFIG||!window.supabase){setConnection('No se pudo cargar la configuración o la librería de Supabase. Revisa config.js y la conexión a internet.',false);return}
 sb=window.supabase.createClient(window.SCRIMS_CONFIG.supabaseUrl,window.SCRIMS_CONFIG.supabaseAnonKey);
+window.scrimsSupabase=sb;
 setConnection('Conexión inicial con Supabase establecida. Los datos se cargarán según los permisos de cada usuario.',true);
 sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){$('newPasswordPanel').classList.remove('hidden');$('forgotPasswordPanel').classList.add('hidden');$('newPasswordPanel').scrollIntoView({behavior:'smooth',block:'center'})}setTimeout(sessionChanged,0)});sessionChanged();
 })();
@@ -620,7 +622,7 @@ sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){$('newPasswo
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 if(!window.SCRIMS_CONFIG||!window.supabase)return;
-const client=window.supabase.createClient(window.SCRIMS_CONFIG.supabaseUrl,window.SCRIMS_CONFIG.supabaseAnonKey);
+const client=window.scrimsSupabase||window.supabase.createClient(window.SCRIMS_CONFIG.supabaseUrl,window.SCRIMS_CONFIG.supabaseAnonKey);
 let admin=false,active=[],current=null,channel=null;
 function show(a){if(!a)return;try{if(sessionStorage.getItem('scrims-global-announcement-seen-'+a.id)==='1')return}catch(e){}current=a;const panel=$('globalAnnouncementOverlay').querySelector('.global-announcement-box');panel.className='global-announcement-box level-'+(a.level||'important');$('globalAnnouncementDisplayLabel').textContent=(a.level==='urgent'?'🚨 AVISO URGENTE':a.level==='info'?'📌 INFORMACIÓN IMPORTANTE':'📢 COMUNICADO OFICIAL')+' · SCRIMS RTG';$('globalAnnouncementSymbol').textContent=a.level==='urgent'?'🚨':a.level==='info'?'📌':'⚠️';$('globalAnnouncementDisplayTitle').textContent=a.title;$('globalAnnouncementDisplayMessage').textContent=a.message;$('globalAnnouncementOverlay').classList.remove('hidden')}
 function dismiss(){if(current)try{sessionStorage.setItem('scrims-global-announcement-seen-'+current.id,'1')}catch(e){}$('globalAnnouncementOverlay').classList.add('hidden');current=null}
