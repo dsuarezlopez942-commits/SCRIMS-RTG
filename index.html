@@ -606,8 +606,8 @@ sb.auth.onAuthStateChange(()=>{setTimeout(sessionChanged,0)});sessionChanged();
  }
  const saved=(()=>{try{return localStorage.getItem('scrims-rtg-language')}catch(e){return null}})();
  document.addEventListener('DOMContentLoaded',()=>{
-   $('langES')?.addEventListener('click',()=>applyLanguage('es'));
-   $('langEN')?.addEventListener('click',()=>applyLanguage('en'));
+   document.getElementById('langES')?.addEventListener('click',()=>applyLanguage('es'));
+   document.getElementById('langEN')?.addEventListener('click',()=>applyLanguage('en'));
    applyLanguage(saved||'es');
    const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(translateNode)));
    observer.observe(document.body,{childList:true,subtree:true});
