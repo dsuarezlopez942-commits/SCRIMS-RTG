@@ -236,11 +236,41 @@ button,.tab{min-height:42px}
 @media(max-width:760px){.community-grid{grid-template-columns:1fr}.community-card{padding:16px}}
 
 .header-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.language-switch{display:flex;gap:4px;padding:4px;border:1px solid #35353d;border-radius:10px;background:#111114}.language-switch button{min-width:38px;min-height:32px;padding:5px 9px;font-size:11px}.language-switch button.active{background:#c4b5fd;color:#111114;border-color:#c4b5fd}@media(max-width:700px){.header-actions{gap:7px}.language-switch button{min-height:30px}}
+
+.tutorial-launch{background:#211c29;border:1px solid #51465f;color:#e9ddff;padding:8px 12px;border-radius:9px;font-size:12px;font-weight:800;min-height:36px}
+.tutorial-launch:hover{background:#332744;border-color:#a78bfa}
+.tutorial-overlay{position:fixed;inset:0;z-index:1000;background:#050508dc;backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:18px}
+.tutorial-overlay.open{display:flex}
+.tutorial-dialog{width:min(620px,100%);max-height:min(88vh,760px);overflow:auto;background:linear-gradient(145deg,#1b1a22,#101014);border:1px solid #51465f;border-radius:20px;padding:24px;box-shadow:0 25px 90px #000b}
+.tutorial-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.tutorial-kicker{color:#c4b5fd;font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase}
+.tutorial-progress{height:6px;background:#303039;border-radius:99px;overflow:hidden;margin:14px 0 20px}
+.tutorial-progress span{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#c4b5fd);width:16.66%;transition:width .2s}
+.tutorial-step-number{font-size:11px;color:#c4b5fd;font-weight:800;letter-spacing:1.5px}
+.tutorial-dialog h2{font-size:clamp(24px,5vw,34px);line-height:1.15;margin:10px 0}
+.tutorial-dialog p{color:#c4c4cc;line-height:1.75;margin:8px 0 18px}
+.tutorial-tip{border:1px solid #51465f;background:#211c29;color:#e9ddff;border-radius:12px;padding:13px;font-size:13px;line-height:1.6}
+.tutorial-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+.tutorial-actions .right{display:flex;gap:8px;margin-left:auto}
+.tutorial-dialog button{min-height:40px}
+@media(max-width:700px){.header-actions{justify-content:flex-end}.tutorial-launch{font-size:10px;padding:7px 9px}.tutorial-dialog{padding:18px;border-radius:15px}.tutorial-actions .right{width:100%;justify-content:flex-end}}
 </style>
 </head>
 <body>
-<header><div class="wrap top"><div class="brand"><img class="logo" src="logo-rtg.png" alt="Logo SCRIMS RTG"><div><h1>SCRIMS RTG</h1><small>CUBEX POINTS MANAGER</small></div></div><div class="header-actions"><div class="language-switch" role="group" aria-label="Language"><button type="button" id="langES" class="active" aria-pressed="true">ES</button><button type="button" id="langEN" aria-pressed="false">EN</button></div><span class="pill">CREATIVE DESTRUCTION</span></div></div></header>
-<main>
+<header><div class="wrap top"><div class="brand"><img class="logo" src="logo-rtg.png" alt="Logo SCRIMS RTG"><div><h1>SCRIMS RTG</h1><small>CUBEX POINTS MANAGER</small></div></div><div class="header-actions"><div class="language-switch" role="group" aria-label="Language"><button type="button" id="langES" class="active" aria-pressed="true">ES</button><button type="button" id="langEN" aria-pressed="false">EN</button></div><button type="button" id="openTutorial" class="tutorial-launch">📘 <span data-tutorial-label>VER TUTORIAL</span></button><span class="pill">CREATIVE DESTRUCTION</span></div></div></header>
+
+<div class="tutorial-overlay" id="tutorialModal" aria-hidden="true">
+ <section class="tutorial-dialog" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+  <div class="tutorial-top"><div><div class="tutorial-kicker" id="tutorialKicker">SCRIMS RTG · QUICK GUIDE</div><div class="tutorial-step-number" id="tutorialStepCount">STEP 1 OF 6</div></div><button type="button" id="closeTutorial" aria-label="Close tutorial">✕</button></div>
+  <div class="tutorial-progress"><span id="tutorialProgressBar"></span></div>
+  <div style="font-size:38px" id="tutorialIcon" aria-hidden="true">👋</div>
+  <h2 id="tutorialTitle">Welcome to SCRIMS RTG!</h2>
+  <p id="tutorialDescription"></p>
+  <div class="tutorial-tip" id="tutorialTip"></div>
+  <div class="tutorial-actions"><button type="button" id="skipTutorial" class="small">Skip tutorial</button><div class="right"><button type="button" id="prevTutorial" class="small">Back</button><button type="button" id="nextTutorial" class="primary">Next</button></div></div>
+ </section>
+</div>
+\n<main>
 <section class="hero"><img class="hero-banner" src="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png" alt="Banner de SCRIMS RTG con personaje de Creative Destruction"><div class="eyebrow">COMPETITIVE ARENA</div><h2>DOMINA LA <span>CLASIFICACIÓN.</span></h2><p>Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.</p></section>
 <div class="card" id="connectionCard"><b>Conectando con SCRIMS RTG…</b><div class="muted" id="connectionText">Comprobando conexión segura con la base de datos.</div></div>
 <nav id="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="cuenta">Registro / Acceso</button><button class="tab" data-view="jugadores">Jugadores</button><button class="tab" data-view="torneos">Torneos</button><button class="tab" data-view="clasificacion">Clasificación</button><button class="tab" data-view="notificaciones">Notificaciones <span id="notificationBadge"></span></button><button class="tab hidden" id="adminTab" data-view="admin">Administrador</button></nav>
@@ -612,6 +642,52 @@ sb.auth.onAuthStateChange(()=>{setTimeout(sessionChanged,0)});sessionChanged();
    const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(translateNode)));
    observer.observe(document.body,{childList:true,subtree:true});
  });
+})();
+</script>
+
+<script>
+(function(){
+ const steps=[
+  {icon:'👋',es:['¡Bienvenido a SCRIMS RTG!','Tu centro competitivo de Creative Destruction. Aquí puedes registrarte, competir en torneos y seguir tu progreso.','Este recorrido te mostrará las funciones principales de la plataforma.'],en:['Welcome to SCRIMS RTG!','Your competitive hub for Creative Destruction. Register, compete in tournaments, and track your progress.','This quick tour will show you the platform’s main features.']},
+  {icon:'📝',es:['Crea tu cuenta','Entra en «Registro / Acceso» y completa tu nickname, UID, modalidad, correo y contraseña. Usa una contraseña exclusiva para SCRIMS RTG.','Nunca compartas tu contraseña de Creative Destruction.'],en:['Create your account','Open “Sign Up / Login” and enter your nickname, UID, mode, email, and password. Use a password dedicated to SCRIMS RTG.','Never share your Creative Destruction password.']},
+  {icon:'⏳',es:['Espera la aprobación','Después de registrarte, el equipo administrativo revisará tu solicitud. Cuando tu cuenta sea aprobada podrás participar en las competiciones.','Revisa el estado de tu cuenta desde Inicio.'],en:['Wait for approval','After signing up, the administration team will review your application. Once approved, you can participate in competitions.','Check your account status on the Home page.']},
+  {icon:'🏆',es:['Explora e inscríbete','En Torneos encontrarás competiciones disponibles. SOLO permite inscripción individual; DUO y SQUAD requieren crear un equipo e invitar a tus compañeros.','En DUO/SQUAD, tus compañeros deben aceptar la invitación para completar el registro.'],en:['Explore and register','Find available competitions under Tournaments. SOLO allows individual registration; DUO and SQUAD require creating a team and inviting teammates.','For DUO/SQUAD, teammates must accept their invitations to complete registration.']},
+  {icon:'📊',es:['Sigue tu clasificación','Consulta la tabla de clasificación, el podio, tus puntos, kills y resultados. Los puntos se actualizan cuando la administración registra los resultados.','Selecciona SOLO, DUO o SQUAD para consultar cada clasificación.'],en:['Track your ranking','Check the leaderboard, podium, points, kills, and results. Points update when administrators submit match results.','Select SOLO, DUO, or SQUAD to view each ranking.']},
+  {icon:'🔔',es:['Mantente conectado','Revisa tus notificaciones, administra tu perfil y visita la Comunidad para unirte a nuestros Discord y seguir a los creadores oficiales.','Puedes volver a abrir este tutorial cuando quieras con el botón «VER TUTORIAL». ¡Éxitos en la arena!'],en:['Stay connected','Check notifications, manage your profile, and visit Community to join our Discord servers and follow official creators.','You can reopen this guide anytime using the “VIEW TUTORIAL” button. Good luck in the arena!']}
+ ];
+ let index=0;
+ const $=id=>document.getElementById(id);
+ const isEN=()=>document.documentElement.lang==='en';
+ function render(){
+  const s=steps[index],v=isEN()?s.en:s.es;
+  $('tutorialIcon').textContent=s.icon;$('tutorialTitle').textContent=v[0];$('tutorialDescription').textContent=v[1];$('tutorialTip').textContent=v[2];
+  $('tutorialStepCount').textContent=isEN()?'STEP '+(index+1)+' OF '+steps.length:'PASO '+(index+1)+' DE '+steps.length;
+  $('tutorialKicker').textContent=isEN()?'SCRIMS RTG · QUICK GUIDE':'SCRIMS RTG · GUÍA RÁPIDA';
+  $('tutorialProgressBar').style.width=((index+1)/steps.length*100)+'%';
+  $('prevTutorial').textContent=isEN()?'Back':'Anterior';$('prevTutorial').disabled=index===0;
+  $('nextTutorial').textContent=index===steps.length-1?(isEN()?'Finish':'Finalizar'):(isEN()?'Next':'Siguiente');
+  $('skipTutorial').textContent=isEN()?'Skip tutorial':'Saltar tutorial';
+  $('openTutorial').querySelector('[data-tutorial-label]').textContent=isEN()?'VIEW TUTORIAL':'VER TUTORIAL';
+ }
+ function close(markSeen=true){
+  $('tutorialModal').classList.remove('open');$('tutorialModal').setAttribute('aria-hidden','true');
+  if(markSeen){try{localStorage.setItem('scrims-rtg-tutorial-seen','1')}catch(e){}}
+ }
+ function open(){
+  index=0;render();$('tutorialModal').classList.add('open');$('tutorialModal').setAttribute('aria-hidden','false');$('closeTutorial').focus();
+ }
+ $('openTutorial').addEventListener('click',open);
+ $('closeTutorial').addEventListener('click',()=>close(true));
+ $('skipTutorial').addEventListener('click',()=>close(true));
+ $('prevTutorial').addEventListener('click',()=>{if(index>0){index--;render()}});
+ $('nextTutorial').addEventListener('click',()=>{if(index<steps.length-1){index++;render()}else close(true)});
+ $('tutorialModal').addEventListener('click',e=>{if(e.target===$('tutorialModal'))close(true)});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('tutorialModal').classList.contains('open'))close(true)});
+ document.getElementById('langES').addEventListener('click',render);
+ document.getElementById('langEN').addEventListener('click',render);
+ render();
+ let seen=false;try{seen=localStorage.getItem('scrims-rtg-tutorial-seen')==='1'}catch(e){}
+ if(!seen)setTimeout(open,900);
 })();
 </script>
 </body></html>
