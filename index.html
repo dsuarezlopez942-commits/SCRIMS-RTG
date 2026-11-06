@@ -524,7 +524,7 @@ function renderTournamentSettings(){
   const open=t.status==='Abierto'&&t.registration_open&&!(t.registration_closes_at&&new Date(t.registration_closes_at)<new Date());
   const label=open?'ABIERTO':'CERRADO';
   const action=open?'Cerrar torneo':'Reabrir torneo';
-  return '<article class="tournament-card"><span class="pill '+(open?'ok':'wait')+'">'+label+'</span><h4>'+esc(t.name)+'</h4><div class="tournament-meta"><span>Modalidad: '+esc(t.mode)+'</span><span>Estado: '+esc(t.status)+'</span></div><div class="tournament-actions"><button class="'+(open?'small danger':'small primary')+'" data-set-tournament-state="'+t.id+'">'+action+'</button></div></article>';
+  return '<article class="tournament-card"><span class="pill '+(open?'ok':'wait')+'">'+label+'</span><h4>'+esc(t.name)+'</h4><div class="tournament-meta"><span>Modalidad: '+esc(t.mode)+'</span><span>Estado: '+esc(t.status)+'</span></div><div class="tournament-actions"><button class="'+(open?'small danger':'small primary')+'" data-set-tournament-state="'+t.id+'">'+action+'</button><button type="button" class="small primary" data-bulk-register="'+t.id+'" '+(!open?'disabled':'')+'>INSCRIBIR A TODOS · '+t.mode+'</button></div><div id="bulk-result-'+t.id+'" class="registration-note" aria-live="polite"></div></article>';
  }).join('');
  host.querySelectorAll('[data-set-tournament-state]').forEach(button=>button.onclick=async()=>{
   if(!isAdmin){msg('tournamentSettingsMsg','Acceso denegado: solo administradores.',true);return}
@@ -547,6 +547,27 @@ function renderTournamentSettings(){
    return;
   }
   msg('tournamentSettingsMsg',reopening?'Torneo reabierto. Las inscripciones están habilitadas.':'Torneo cerrado. Se conservaron todos los datos.');
+  await refresh();
+ });
+ host.querySelectorAll('[data-bulk-register]').forEach(button=>button.onclick=async()=>{
+  if(!isAdmin){msg('tournamentSettingsMsg','Acceso denegado: solo administradores.',true);return}
+  const t=tournaments.find(x=>x.id===button.dataset.bulkRegister);
+  if(!t)return;
+  const confirmation='¿Inscribir automáticamente a todos los jugadores aprobados disponibles en "'+t.name+'" ('+t.mode+')? '+(t.mode==='SOLO'?'Se crearán inscripciones individuales.':t.mode==='DUO'?'Se formarán parejas automáticas.':'Se formarán equipos automáticos de cuatro.')+' No se duplicarán inscripciones ni se modificarán equipos existentes. Esta acción no se puede deshacer en bloque.';
+  if(!confirm(confirmation))return;
+  const output=$('bulk-result-'+t.id);
+  button.disabled=true;button.textContent='PROCESANDO…';output.textContent='Procesando inscripciones de forma segura…';
+  const {data,error}=await sb.rpc('admin_bulk_register_tournament',{target_tournament:t.id});
+  if(error){
+   output.textContent='No se pudo completar: '+error.message;
+   output.className='status error';
+   button.disabled=false;button.textContent='REINTENTAR INSCRIPCIÓN MASIVA';
+   return;
+  }
+  const result=data||{};
+  output.className='status';
+  output.textContent='Completado · '+(result.registered||0)+' jugadores inscritos · '+(result.teams_created||0)+' equipos creados · '+(result.remaining_unteamed||0)+' jugadores pendientes por no completar equipo · '+(result.slots_left||0)+' cupos disponibles.';
+  button.textContent='INSCRIPCIÓN COMPLETADA';
   await refresh();
  });
 }
