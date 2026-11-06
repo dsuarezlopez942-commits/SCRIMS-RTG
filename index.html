@@ -599,7 +599,7 @@ function renderWinnerPostAdmin(){
    if(upErr){msg('winnerPostMsg','No se pudo subir la imagen. Ejecuta el SQL de ganadores en Supabase. '+upErr.message,true);return}
    imageUrl=sb.storage.from('scrims-winner-results').getPublicUrl(path).data.publicUrl;
   }
-  const {error}=await sb.from('tournament_winner_posts').insert({tournament_id:tid,mode:t.mode,title,content:content||null,image_url:imageUrl,top5:[]});
+  const {error}=await sb.from('tournament_winner_posts').insert({tournament_id:tid,mode:t.mode,title,content:content||null,image_url:imageUrl,top5:[],created_by:user.id});
   if(error){msg('winnerPostMsg','No se pudo publicar: '+error.message,true);return}
   msg('winnerPostMsg','¡Resultados publicados correctamente!');e.target.reset();await refresh();
  };
@@ -609,7 +609,7 @@ function renderWinnerPostAdmin(){
   const ids=[1,2,3,4,5].map(n=>$('wtPlace'+n)?.value||'');
   if(ids.some(x=>!x)||new Set(ids).size!==5){msg('winnerTopMsg','Asigna cinco ganadores distintos, sin repetir.',true);return}
   const source=t.mode==='SOLO'?players:teams,top5=ids.map(id=>{const x=source.find(v=>v.id===id);return {id,name:x?.nickname||x?.name||'Ganador'}});
-  const {error}=await sb.from('tournament_winner_posts').insert({tournament_id:tid,mode:t.mode,title:'TOP 5 · '+t.name,content:'Clasificación oficial publicada por la administración.',image_url:null,top5});
+  const {error}=await sb.from('tournament_winner_posts').insert({tournament_id:tid,mode:t.mode,title:'TOP 5 · '+t.name,content:'Clasificación oficial publicada por la administración.',image_url:null,top5,created_by:user.id});
   if(error){msg('winnerTopMsg','No se pudo guardar el Top 5: '+error.message,true);return}
   msg('winnerTopMsg','¡Top 5 guardado y publicado en Clasificación!');await refresh();
  };
