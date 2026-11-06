@@ -332,7 +332,14 @@ button,.tab{min-height:42px}
 <section id="notificaciones" class="view hidden"><div class="card"><h3>Centro de notificaciones</h3><p class="muted">Avisos de torneos, inscripciones, invitaciones, aprobación de cuenta y resultados.</p><div class="actions" style="margin-bottom:12px"><button type="button" id="markAllNotifications" class="small">Marcar todas como leídas</button></div><div id="notificationsList" class="empty">Inicia sesión para ver tus notificaciones.</div></div></section>
 <section id="clasificacion" class="view hidden"><div class="card"><h3>Tabla de clasificación</h3><label style="max-width:180px;margin-bottom:12px">Modalidad<select id="rankMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><div id="rankingPodium" class="rank-podium"><div class="empty">Cargando podio…</div></div><div id="rankingTable" class="empty">Cargando…</div><p class="muted">Los puntos se acumulan a partir de los resultados registrados por el administrador.</p></div></section>
 <section id="admin" class="view grid hidden">
-<div class="card"><h3>Panel administrativo</h3><div id="adminGate" class="muted">Inicia sesión con tu cuenta de administrador para acceder a las herramientas.</div><div id="adminPanel" class="hidden"><div id="globalAnnouncementsAdmin" class="admin-list hidden" style="margin-top:22px">
+<div class="card"><h3>Panel administrativo</h3><div id="adminGate" class="muted">Inicia sesión con tu cuenta de administrador para acceder a las herramientas.</div><div id="adminPanel" class="hidden">
+<div class="admin-list" id="tournamentSettings">
+<h3>⚙️ Centro de configuración de torneos</h3>
+<p class="muted">Abre o cierra torneos sin eliminar inscripciones, equipos, jugadores ni resultados. Reabrir habilita nuevamente las inscripciones.</p>
+<div id="tournamentSettingsList" class="tournament-grid"><div class="empty">Cargando torneos…</div></div>
+<div id="tournamentSettingsMsg" aria-live="polite"></div>
+</div>
+<div id="globalAnnouncementsAdmin" class="admin-list hidden" style="margin-top:22px">
 <h3>📢 Avisos globales</h3><p class="muted">Comunicados destacados para todos. Permanecen activos hasta que un administrador los desactive.</p>
 <form id="globalAnnouncementForm">
 <label>Título del aviso<input id="globalAnnouncementTitle" maxlength="90" required placeholder="Ej. MANTENIMIENTO PROGRAMADO"></label>
@@ -510,7 +517,43 @@ function renderAdminRegistrations(){
  $('adminRegistrations').innerHTML=table(active.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),p=players.find(x=>x.id===r.player_id),team=teams.find(x=>x.id===r.team_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>'+esc(team?.name||p?.nickname||'Participante')+'</td><td>'+esc(t?.mode||'')+'</td><td><button class="small danger" data-cancel-reg="'+r.id+'">Cancelar</button></td></tr>'}),['Torneo','Jugador / Equipo','Modo','Acción']);
  document.querySelectorAll('[data-cancel-reg]').forEach(b=>b.onclick=async()=>{if(!confirm('¿Cancelar esta inscripción?'))return;const {error}=await sb.from('tournament_registrations').update({status:'Cancelado'}).eq('id',b.dataset.cancelReg);if(error)alert(error.message);else await refresh()});
 }
+function renderTournamentSettings(){
+ const host=$('tournamentSettingsList');
+ if(!host)return;
+ const list=tournaments.filter(t=>t.status!=='Borrador');
+ if(!list.length){host.innerHTML='<div class="empty">No hay torneos publicados para configurar.</div>';return}
+ host.innerHTML=list.map(t=>{
+  const open=t.status==='Abierto'&&t.registration_open&&!(t.registration_closes_at&&new Date(t.registration_closes_at)<new Date());
+  const label=open?'ABIERTO':'CERRADO';
+  const action=open?'Cerrar torneo':'Reabrir torneo';
+  return '<article class="tournament-card"><span class="pill '+(open?'ok':'wait')+'">'+label+'</span><h4>'+esc(t.name)+'</h4><div class="tournament-meta"><span>Modalidad: '+esc(t.mode)+'</span><span>Estado: '+esc(t.status)+'</span></div><div class="tournament-actions"><button class="'+(open?'small danger':'small primary')+'" data-set-tournament-state="'+t.id+'">'+action+'</button></div></article>';
+ }).join('');
+ host.querySelectorAll('[data-set-tournament-state]').forEach(button=>button.onclick=async()=>{
+  if(!isAdmin){msg('tournamentSettingsMsg','Acceso denegado: solo administradores.',true);return}
+  const t=tournaments.find(x=>x.id===button.dataset.setTournamentState);
+  if(!t)return;
+  const currentlyOpen=t.status==='Abierto'&&t.registration_open&&!(t.registration_closes_at&&new Date(t.registration_closes_at)<new Date());
+  const reopening=!currentlyOpen;
+  const question=reopening
+   ?'¿Reabrir "'+t.name+'" y habilitar nuevamente las inscripciones? Se quitará la fecha de cierre anterior si ya venció. Los registros y resultados existentes se conservarán.'
+   :'¿Cerrar "'+t.name+'" y detener nuevas inscripciones? Los jugadores, equipos y resultados existentes se conservarán.';
+  if(!confirm(question))return;
+  button.disabled=true;
+  const changes=reopening
+   ?{status:'Abierto',registration_open:true,registration_closes_at:null}
+   :{status:'Finalizado',registration_open:false};
+  const {data,error}=await sb.from('tournaments').update(changes).eq('id',t.id).select('id').maybeSingle();
+  if(error||!data){
+   msg('tournamentSettingsMsg',error?'No se pudo cambiar el torneo: '+error.message:'No se aplicó el cambio. Verifica que tu cuenta tenga permisos de administrador.',true);
+   button.disabled=false;
+   return;
+  }
+  msg('tournamentSettingsMsg',reopening?'Torneo reabierto. Las inscripciones están habilitadas.':'Torneo cerrado. Se conservaron todos los datos.');
+  await refresh();
+ });
+}
 function renderAdmin(){
+ renderTournamentSettings();
  renderAdminManagement();
  renderPlayerBans();
  $('trTournament').innerHTML=tournaments.filter(t=>t.status!=='Borrador'&&t.mode!=='SOLO').map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
