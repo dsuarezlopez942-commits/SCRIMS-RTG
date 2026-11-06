@@ -26,11 +26,11 @@ create index if not exists point_deductions_tournament_idx
 
 alter table public.point_deductions enable row level security;
 
-drop policy if exists "Admins can view point deductions" on public.point_deductions;
-create policy "Admins can view point deductions"
+drop policy if exists "Point deductions are public" on public.point_deductions;
+create policy "Point deductions are public"
   on public.point_deductions for select
-  to authenticated
-  using (public.is_scrims_admin());
+  to anon, authenticated
+  using (true);
 
 drop policy if exists "Admins can create point deductions" on public.point_deductions;
 create policy "Admins can create point deductions"
