@@ -498,9 +498,9 @@ function renderMyRegistrations(){
  if(!mine.length)return '<div class="empty">Todavía no tienes inscripciones activas.</div>';
  return table(mine.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),team=teams.find(x=>x.id===r.team_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>'+(team?esc(team.name):'Individual')+'</td><td><span class="pill ok">'+r.status+'</span></td></tr>'}),['Torneo','Participación','Estado']);
 }
-async function registerSolo(tid){const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session?.user?.id){user=null;await sessionChanged();alert('No hay una sesión activa en este navegador. Inicia sesión y espera a que aparezca tu correo antes de inscribirte.');return}const {error}=await sb.rpc('register_solo_tournament',{target_tournament:tid});if(error){alert(error.message);return}alert('¡Inscripción confirmada!');await refresh()}
+async function registerSolo(tid){if(!user?.id){alert('Inicia sesión para inscribirte.');return}const {error}=await sb.rpc('register_solo_tournament',{target_tournament:tid});if(error){alert(error.message);return}alert('¡Inscripción confirmada!');await refresh()}
 async function registerTeam(tid,mode){
- const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session?.user?.id){user=null;await sessionChanged();alert('No hay una sesión activa en este navegador. Inicia sesión y espera a que aparezca tu correo antes de crear el equipo.');return}
+ if(!user?.id){alert('Inicia sesión para crear el equipo.');return}
  const name=$('teamName-'+tid).value.trim(),uids=$('teamUids-'+tid).value.split(',').map(x=>x.trim()).filter(Boolean),needed=mode==='DUO'?1:3;
  if(!name||uids.length!==needed){alert('Escribe el nombre del equipo y exactamente '+needed+' UID(s), separados por comas.');return}
  const {error}=await sb.rpc('create_and_register_team',{target_tournament:tid,team_name:name,teammate_uids:uids});if(error){alert(error.message);return}alert('Equipo creado. La inscripción se confirmará cuando todos los compañeros acepten la invitación.');await refresh()
@@ -581,14 +581,25 @@ $('grantAdminBtn').addEventListener('click',async()=>{
  await refresh();
 });
 async function changeStatus(id,status){const {error}=await sb.from('profiles').update({status}).eq('id',id);if(error)alert(error.message);else await refresh()}
-let sessionCheckInProgress=false;
-async function sessionChanged(){
- if(!sb||sessionCheckInProgress)return;
+let sessionCheckInProgress=false,sessionCheckQueued=false,pendingSessionRead=true,pendingSessionValue=null;
+async function sessionChanged(sessionOverride,eventName){
+ if(!sb)return;
+ const hasSessionOverride=arguments.length>0;
+ if(sessionCheckInProgress){
+  sessionCheckQueued=true;pendingSessionRead=!hasSessionOverride;pendingSessionValue=sessionOverride;return;
+ }
  sessionCheckInProgress=true;
  try{
-  const {data,error}=await sb.auth.getSession();
-  if(error)console.warn('No se pudo recuperar la sesión local:',error.message);
-  user=data?.session?.user||null;profile=null;isAdmin=false;
+  let session=sessionOverride;
+  if(!hasSessionOverride){
+   const {data,error}=await sb.auth.getSession();
+   if(error)console.warn('No se pudo recuperar la sesión local:',error.message);
+   session=data?.session||null;
+  }
+  const previousUserId=user?.id||null;
+  user=session?.user||null;window.scrimsCurrentUser=user;
+  if(eventName==='TOKEN_REFRESHED'&&previousUserId&&previousUserId===user?.id)return;
+  profile=null;isAdmin=false;
   if(user?.id){
    const {data:p,error:profileError}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
    if(!profileError)profile=p;
@@ -602,8 +613,17 @@ async function sessionChanged(){
    $('adminPanel').classList.add('hidden');$('adminTab').classList.add('hidden');$('logoutBtn').classList.add('hidden');
   }
   await refresh();
- }catch(err){console.error('Error al actualizar la sesión:',err);user=null;profile=null;isAdmin=false;await refresh();}
- finally{sessionCheckInProgress=false;}
+ }catch(err){
+  console.error('Error temporal al actualizar la sesión; se conserva el estado actual:',err);
+  if(user)window.scrimsCurrentUser=user;
+ }finally{
+  sessionCheckInProgress=false;
+  if(sessionCheckQueued){
+   const readAgain=pendingSessionRead,nextSession=pendingSessionValue;
+   sessionCheckQueued=false;pendingSessionRead=true;pendingSessionValue=null;
+   if(readAgain)void sessionChanged();else void sessionChanged(nextSession,'QUEUED_AUTH_EVENT');
+  }
+ }
 }
 $('signupForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;const email=$('suEmail').value.trim(),password=$('suPassword').value;if(password.length<8){msg('signupMsg','La contraseña debe tener al menos 8 caracteres.',true);return}
  const {data,error}=await sb.auth.signUp({email,password,options:{data:{nickname:$('suNickname').value.trim(),game_uid:$('suUid').value.trim(),mode:$('suMode').value,team_name:$('suTeam').value.trim()}}});
@@ -626,16 +646,15 @@ $('loginForm').addEventListener('submit',async e=>{
    return;
   }
   if(!data?.session?.user){msg('loginMsg','Supabase no devolvió una sesión válida. Espera un momento y vuelve a intentarlo.',true);return}
-  user=data.session.user;
   msg('loginMsg','Sesión iniciada correctamente.');
-  await sessionChanged();
+  await sessionChanged(data.session,'SIGNED_IN');
  }catch(err){console.error('Error de inicio de sesión:',err);msg('loginMsg','No se pudo completar el inicio de sesión. Espera unos minutos y vuelve a intentarlo.',true)}
  finally{if(button)button.disabled=false}
 });
 $('forgotPasswordBtn').addEventListener('click',()=>{$('recoveryEmail').value=$('liEmail').value.trim();$('forgotPasswordPanel').classList.toggle('hidden')});
 $('forgotPasswordForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb){msg('recoveryMsg','El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.',true);return}const email=$('recoveryEmail').value.trim();const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(error){msg('recoveryMsg',error.message,true);return}msg('recoveryMsg','Si el correo está registrado, recibirás un enlace para crear una nueva contraseña. Revisa también spam.')});
 $('newPasswordForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb){msg('newPasswordMsg','El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.',true);return}const pass=$('newPassword').value;if(pass.length<8){msg('newPasswordMsg','Usa al menos 8 caracteres.',true);return}if(pass!==$('confirmNewPassword').value){msg('newPasswordMsg','Las contraseñas no coinciden.',true);return}const {error}=await sb.auth.updateUser({password:pass});if(error){msg('newPasswordMsg',error.message,true);return}msg('newPasswordMsg','Contraseña actualizada correctamente. Ya puedes iniciar sesión con tu nueva contraseña.');$('newPasswordForm').reset();$('newPasswordPanel').classList.add('hidden')});
-$('logoutBtn').addEventListener('click',async()=>{if(!sb)return;await sb.auth.signOut();await sessionChanged()});
+$('logoutBtn').addEventListener('click',async()=>{if(!sb)return;const {error}=await sb.auth.signOut();if(error){console.error('No se pudo cerrar la sesión:',error);return}await sessionChanged(null,'SIGNED_OUT')});
 $('filterMode').addEventListener('change',refresh);$('rankMode').addEventListener('change',refresh);
 $('tournamentForm').addEventListener('submit',async e=>{e.preventDefault();const {error}=await sb.from('tournaments').insert({name:$('tName').value.trim(),mode:$('tMode').value,status:'Abierto',starts_at:$('tDate').value?new Date($('tDate').value).toISOString():null,max_slots:Number($('tSlots').value),registration_open:true,registration_closes_at:$('tClose').value?new Date($('tClose').value).toISOString():null});if(error)msg('tournamentMsg',error.message,true);else{msg('tournamentMsg','Torneo creado correctamente.');e.target.reset();await refresh()}});
 $('teamResultForm').addEventListener('submit',async e=>{
@@ -651,27 +670,14 @@ $('rTournament').addEventListener('change',()=>{const t=tournaments.find(x=>x.id
 if(!window.SCRIMS_CONFIG||!window.supabase){setConnection('No se pudo cargar la configuración o la librería de Supabase. Revisa config.js y la conexión a internet.',false);return}
 sb=window.supabase.createClient(window.SCRIMS_CONFIG.supabaseUrl,window.SCRIMS_CONFIG.supabaseAnonKey);
 window.scrimsSupabase=sb;
-// Recuperación local de sesiones cuyo refresh token recibe HTTP 429.
-// Solo limpia la sesión de ESTE navegador; no toca la cuenta ni el perfil en Supabase.
-let scrimsLocalAuthRecovery=false;
-window.addEventListener('unhandledrejection',async event=>{
- const err=event.reason;
- const detail=[err?.message,err?.name,err?.status,err?.code,err?.context?.status].filter(Boolean).join(' ');
- if(scrimsLocalAuthRecovery||!(/429|too many requests|rate limit/i.test(detail)&&/refresh|token|auth/i.test(detail)))return;
- scrimsLocalAuthRecovery=true;
- event.preventDefault();
- console.warn('SCRIMS RTG: sesión local con error de renovación. Se limpiará únicamente en este navegador.');
- try{await sb.auth.signOut({scope:'local'})}catch(cleanError){console.warn('No se pudo limpiar la sesión local automáticamente:',cleanError)}
- user=null;profile=null;isAdmin=false;
- $('sessionInfo').textContent='Sesión anterior restablecida. Inicia sesión nuevamente.';
- $('loginMsg').textContent='Detectamos una sesión guardada que no se pudo renovar. Ya se restableció en este navegador; espera a que termine el límite temporal de acceso y vuelve a iniciar sesión.';
- $('loginMsg').className='status error';
- $('logoutBtn').classList.add('hidden');
- $('adminPanel').classList.add('hidden');$('adminTab').classList.add('hidden');
- try{await refresh()}catch(refreshError){console.warn(refreshError)}
-});
+// No se destruye la sesión por errores temporales de red o límites 429.
+// Supabase Auth conserva y renueva los tokens automáticamente.
 setConnection('Conexión inicial con Supabase establecida. Los datos se cargarán según los permisos de cada usuario.',true);
-sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){$('newPasswordPanel').classList.remove('hidden');$('forgotPasswordPanel').classList.add('hidden');$('newPasswordPanel').scrollIntoView({behavior:'smooth',block:'center'})}setTimeout(sessionChanged,0)});sessionChanged();
+sb.auth.onAuthStateChange((event,session)=>{
+ if(event==='PASSWORD_RECOVERY'){$('newPasswordPanel').classList.remove('hidden');$('forgotPasswordPanel').classList.add('hidden');$('newPasswordPanel').scrollIntoView({behavior:'smooth',block:'center'})}
+ setTimeout(()=>sessionChanged(session,event),0);
+});
+sessionChanged();
 })();
 </script>
 <script>
@@ -686,9 +692,9 @@ function dismiss(){if(current)try{sessionStorage.setItem('scrims-global-announce
 $('globalAnnouncementClose').addEventListener('click',dismiss);$('globalAnnouncementAcknowledge').addEventListener('click',dismiss);
 function renderAdmin(){const host=$('globalAnnouncementAdminList');if(!host)return;host.innerHTML=active.length?active.map(a=>'<article class="tournament-card" style="margin:9px 0"><div class="actions" style="justify-content:space-between"><b>'+esc(a.title)+'</b><span class="pill">'+(a.level==='urgent'?'URGENTE':a.level==='info'?'INFO':'IMPORTANTE')+'</span></div><p class="muted">'+esc(a.message)+'</p><small class="muted">'+new Date(a.created_at).toLocaleString('es-BO')+'</small><div class="actions" style="margin-top:10px"><button type="button" class="danger small" data-deactivate-announcement="'+a.id+'">Desactivar aviso</button></div></article>').join(''):'<div class="empty">No hay avisos activos.</div>';host.querySelectorAll('[data-deactivate-announcement]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;const {error}=await client.from('scrims_announcements').update({active:false}).eq('id',btn.dataset.deactivateAnnouncement);if(error){alert('No se pudo desactivar: '+error.message);btn.disabled=false}else await loadActive()}))}
 async function loadActive(){const {data,error}=await client.from('scrims_announcements').select('id,title,message,level,created_at').eq('active',true).order('created_at',{ascending:false});if(error){console.warn('Avisos globales:',error.message);return}active=data||[];let next=active[0];try{next=active.find(a=>sessionStorage.getItem('scrims-global-announcement-seen-'+a.id)!=='1')||null}catch(e){}if(next)show(next);else{$('globalAnnouncementOverlay').classList.add('hidden');current=null}if(admin)renderAdmin()}
-async function checkAdmin(){const {data:{user}}=await client.auth.getUser();if(!user){admin=false;$('globalAnnouncementsAdmin').classList.add('hidden');return}const {data}=await client.from('profiles').select('role').eq('id',user.id).maybeSingle();admin=data?.role==='admin';$('globalAnnouncementsAdmin').classList.toggle('hidden',!admin);if(admin)renderAdmin()}
+async function checkAdmin(){const currentUser=window.scrimsCurrentUser;if(!currentUser?.id){admin=false;$('globalAnnouncementsAdmin').classList.add('hidden');return}const {data}=await client.from('profiles').select('role').eq('id',currentUser.id).maybeSingle();admin=data?.role==='admin';$('globalAnnouncementsAdmin').classList.toggle('hidden',!admin);if(admin)renderAdmin()}
 $('globalAnnouncementForm').addEventListener('submit',async e=>{e.preventDefault();if(!admin)return;const btn=e.submitter;btn.disabled=true;const payload={title:$('globalAnnouncementTitle').value.trim(),message:$('globalAnnouncementMessage').value.trim(),level:$('globalAnnouncementLevel').value,active:true};const {error}=await client.from('scrims_announcements').insert(payload);btn.disabled=false;const status=$('globalAnnouncementStatus');if(error){status.className='status error';status.textContent='No se pudo publicar. Ejecuta primero el SQL de avisos globales en Supabase.';console.error(error);return}status.className='status';status.textContent='¡Aviso publicado para todos!';$('globalAnnouncementForm').reset();await loadActive()});
-client.auth.onAuthStateChange(()=>setTimeout(checkAdmin,0));client.auth.getSession().then(async()=>{await checkAdmin();await loadActive()});
+client.auth.onAuthStateChange(()=>setTimeout(checkAdmin,0));loadActive();
 channel=client.channel('scrims-global-announcements').on('postgres_changes',{event:'*',schema:'public',table:'scrims_announcements'},()=>loadActive()).subscribe();window.addEventListener('focus',loadActive);
 })();
 </script>
