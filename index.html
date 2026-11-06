@@ -234,10 +234,12 @@ button,.tab{min-height:42px}
 .community-card.discord .community-link:hover{background:#4752c4;border-color:#4752c4}
 .community-icon{font-size:25px;line-height:1}
 @media(max-width:760px){.community-grid{grid-template-columns:1fr}.community-card{padding:16px}}
+
+.header-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.language-switch{display:flex;gap:4px;padding:4px;border:1px solid #35353d;border-radius:10px;background:#111114}.language-switch button{min-width:38px;min-height:32px;padding:5px 9px;font-size:11px}.language-switch button.active{background:#c4b5fd;color:#111114;border-color:#c4b5fd}@media(max-width:700px){.header-actions{gap:7px}.language-switch button{min-height:30px}}
 </style>
 </head>
 <body>
-<header><div class="wrap top"><div class="brand"><img class="logo" src="logo-rtg.png" alt="Logo SCRIMS RTG"><div><h1>SCRIMS RTG</h1><small>CUBEX POINTS MANAGER</small></div></div><span class="pill">CREATIVE DESTRUCTION</span></div></header>
+<header><div class="wrap top"><div class="brand"><img class="logo" src="logo-rtg.png" alt="Logo SCRIMS RTG"><div><h1>SCRIMS RTG</h1><small>CUBEX POINTS MANAGER</small></div></div><div class="header-actions"><div class="language-switch" role="group" aria-label="Language"><button type="button" id="langES" class="active" aria-pressed="true">ES</button><button type="button" id="langEN" aria-pressed="false">EN</button></div><span class="pill">CREATIVE DESTRUCTION</span></div></div></header>
 <main>
 <section class="hero"><img class="hero-banner" src="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png" alt="Banner de SCRIMS RTG con personaje de Creative Destruction"><div class="eyebrow">COMPETITIVE ARENA</div><h2>DOMINA LA <span>CLASIFICACIÓN.</span></h2><p>Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.</p></section>
 <div class="card" id="connectionCard"><b>Conectando con SCRIMS RTG…</b><div class="muted" id="connectionText">Comprobando conexión segura con la base de datos.</div></div>
@@ -513,4 +515,103 @@ sb.auth.onAuthStateChange(()=>{setTimeout(sessionChanged,0)});sessionChanged();
 })();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA no disponible:',err)));}</script>
+
+<script>
+/* SCRIMS RTG · Interfaz bilingüe ES/EN */
+(function(){
+ const translations={
+ "COMPETITIVE ARENA":"COMPETITIVE ARENA",
+ "DOMINA LA":"MASTER THE",
+ "CLASIFICACIÓN.":"LEADERBOARD.",
+ "Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.":"Online platform for Creative Destruction scrims and tournaments. Sign up, compete, and follow results on a shared leaderboard.",
+ "Conectando con SCRIMS RTG…":"Connecting to SCRIMS RTG…",
+ "Comprobando conexión segura con la base de datos.":"Checking secure database connection.",
+ "Inicio":"Home","Registro / Acceso":"Sign Up / Login","Jugadores":"Players","Torneos":"Tournaments","Clasificación":"Leaderboard","Notificaciones":"Notifications","Administrador":"Admin",
+ "Panel de competencia":"Competition Dashboard","Jugadores aprobados":"Approved Players","Torneos publicados":"Published Tournaments","Resultados cargados":"Results Submitted",
+ "Elige tu modalidad":"Choose Your Mode","Selecciona cómo quieres competir en SCRIMS RTG.":"Choose how you want to compete in SCRIMS RTG.",
+ "Competencia individual":"Solo Competition","Demuestra tu nivel por tu cuenta.":"Prove your skills on your own.","Registrarme en SOLO":"Register for SOLO",
+ "Estrategia en pareja":"Duo Strategy","Compite junto a tu compañero.":"Compete with your teammate.","Registrarme en DUO":"Register for DUO",
+ "Combate por equipos":"Team Battle","Forma tu equipo y lucha por el primer puesto.":"Build your team and fight for the top spot.","Registrarme en SQUAD":"Register for SQUAD",
+ "Estado de tu cuenta":"Account Status","No has iniciado sesión.":"You are not logged in.","Los registros y resultados se comparten mediante Supabase. Las solicitudes nuevas requieren aprobación del administrador.":"Registrations and results are shared through Supabase. New applications require admin approval.",
+ "Últimos torneos":"Latest Tournaments","Cargando torneos…":"Loading tournaments…","ÚNETE A LA COMUNIDAD":"JOIN THE COMMUNITY","Conéctate con la comunidad y sigue a nuestros creadores oficiales.":"Connect with the community and follow our official creators.",
+ "Servidor oficial":"Official Server","Entra al servidor, comparte con la comunidad y mantente al tanto de las novedades.":"Join the server, connect with the community, and stay up to date.","UNIRME AL DISCORD ↗":"JOIN DISCORD ↗",
+ "Comunidad oficial":"Official Community","Únete al servidor de CUBEX INTERACTIVE y conecta con su comunidad.":"Join the CUBEX INTERACTIVE server and connect with its community.","UNIRME A CUBEX ↗":"JOIN CUBEX ↗",
+ "Creador oficial":"Official Creator","VER TIKTOK ↗":"VIEW TIKTOK ↗",
+ "Crear cuenta de jugador":"Create Player Account","Nickname de Creative Destruction":"Creative Destruction Nickname","Tu nickname":"Your nickname","UID de Creative Destruction":"Creative Destruction UID","Tu UID":"Your UID",
+ "Modalidad":"Mode","Equipo (opcional)":"Team (optional)","Nombre del equipo":"Team name","Correo electrónico":"Email address","Contraseña":"Password","Mínimo 8 caracteres":"At least 8 characters",
+ "Crear mi cuenta":"Create My Account","Usa únicamente tu correo y una contraseña nueva para SCRIMS RTG. Nunca ingreses la contraseña de Creative Destruction. Confirma tu correo si Supabase te lo solicita.":"Use only your email and a new password for SCRIMS RTG. Never enter your Creative Destruction password. Confirm your email if Supabase asks you to.",
+ "Iniciar sesión":"Log In","Entrar":"Log In","Cerrar sesión":"Log Out","Si acabas de registrarte, revisa tu bandeja de entrada y confirma tu correo antes de iniciar sesión.":"If you just signed up, check your inbox and confirm your email before logging in.",
+ "Directorio de jugadores aprobados":"Approved Player Directory","Todas las modalidades":"All Modes","Cargando…":"Loading…","Todavía no hay jugadores aprobados.":"There are no approved players yet.","Ver perfil":"View Profile",
+ "Torneos disponibles":"Available Tournaments","Inscríbete en SOLO o registra a tu equipo en DUO/SQUAD.":"Register for SOLO or sign up your team for DUO/SQUAD.","Mis inscripciones":"My Registrations","Inicia sesión para consultar tus inscripciones.":"Log in to view your registrations.",
+ "Invitaciones a equipos":"Team Invitations","Inicia sesión para ver invitaciones.":"Log in to view invitations.","Historial de resultados de torneos":"Tournament Results History","Cargando resultados…":"Loading results…",
+ "Centro de notificaciones":"Notification Center","Avisos de torneos, inscripciones, invitaciones, aprobación de cuenta y resultados.":"Updates about tournaments, registrations, invitations, account approval, and results.","Marcar todas como leídas":"Mark All as Read","Inicia sesión para ver tus notificaciones.":"Log in to view your notifications.",
+ "Tabla de clasificación":"Leaderboard","Los puntos se acumulan a partir de los resultados registrados por el administrador.":"Points are accumulated from results submitted by the administrator.",
+ "Panel administrativo":"Admin Panel","Inicia sesión con tu cuenta de administrador para acceder a las herramientas.":"Log in with your admin account to access the tools.","Solicitudes de jugadores":"Player Applications",
+ "Crear torneo":"Create Tournament","Nombre del torneo":"Tournament Name","Fecha y hora (opcional)":"Date and Time (optional)","Cupo máximo (jugadores o equipos)":"Maximum Slots (players or teams)","Cierre de inscripciones (opcional)":"Registration Deadline (optional)",
+ "Cargar resultado":"Submit Result","Torneo":"Tournament","Jugador aprobado":"Approved Player","Posición final":"Final Placement","Puntos manuales (DUO/SQUAD)":"Manual Points (DUO/SQUAD)","Guardar resultado":"Save Result",
+ "Cargar resultado de equipo (DUO/SQUAD)":"Submit Team Result (DUO/SQUAD)","Equipo inscrito":"Registered Team","Kills del equipo":"Team Kills","Puntos manuales del equipo":"Team Manual Points","Guardar resultado de equipo":"Save Team Result",
+ "Inscripciones recibidas":"Received Registrations","Administración de administradores":"Admin Management","Solo los administradores pueden acceder a este apartado. Asigna o retira permisos a jugadores con cuenta aprobada.":"Only administrators can access this section. Grant or revoke permissions for players with approved accounts.",
+ "Selecciona un jugador":"Select a player","Convertir en administrador":"Make Admin","Administradores actuales":"Current Administrators","Por seguridad, no puedes quitarte tu propio rol ni retirar el último administrador.":"For security, you cannot remove your own role or revoke the last administrator.",
+ "Exportar jugadores CSV":"Export Players CSV","Exportar resultados CSV":"Export Results CSV","Reglas de puntuación SOLO":"SOLO Scoring Rules","Kills: 2 puntos por eliminación, hasta la kill 10.":"Kills: 2 points per elimination, up to 10 kills.",
+ "DUO y SQUAD quedan con puntos manuales hasta que confirmes sus reglas.":"DUO and SQUAD use manual points until their rules are confirmed.",
+ "COMUNIDAD SCRIMS RTG":"SCRIMS RTG COMMUNITY","UNIRME AL DISCORD ↗":"JOIN DISCORD ↗","Perfil de jugador":"Player Profile","PERFIL DE JUGADOR":"PLAYER PROFILE","Cerrar":"Close","Cambiar mi avatar":"Change My Avatar","Partidas":"Matches","Puntos":"Points","Historial de resultados":"Results History","Sin equipo":"No Team",
+ "Todavía no hay registros.":"There are no records yet.","Ver perfil":"View Profile","Jugador / Equipo":"Player / Team","Posición":"Placement","Estado":"Status","Acción":"Action","Acciones":"Actions",
+ "Por definir":"To Be Determined","Sin resultados":"No Results","El podio aparecerá cuando se registren resultados.":"The podium will appear when results are submitted.",
+ "Ya estás inscrito":"You are registered","Cupo completo":"Full","Inscripciones cerradas":"Registration Closed","Inicia sesión para inscribirte.":"Log in to register.","Tu cuenta debe estar aprobada.":"Your account must be approved.","Inscribirme":"Register","Crear equipo e inscribir":"Create Team & Register",
+ "Aceptar invitación":"Accept Invitation","Marcar como leída":"Mark as Read","Leída":"Read","Nueva":"New","Ver":"View","Todavía no tienes notificaciones.":"You have no notifications yet.",
+ "Individual":"Solo","Jugador":"Player","Equipo":"Team","Fecha por anunciar":"Date to be announced","Inscripción sin fecha de cierre":"Registration has no closing date",
+ "Aprobar":"Approve","Rechazar":"Reject","Cancelar":"Cancel","Administrador":"Administrator","Quitar permisos":"Revoke Access",
+ "La contraseña debe tener al menos 8 caracteres.":"Password must be at least 8 characters.","Cuenta creada. Ya puedes iniciar sesión.":"Account created. You can now log in.","Cuenta creada. Revisa tu correo para confirmar la dirección y luego inicia sesión.":"Account created. Check your email to confirm your address, then log in.",
+ "Sesión iniciada correctamente.":"Successfully logged in.","¡Inscripción confirmada!":"Registration confirmed!","Equipo creado. La inscripción se confirmará cuando todos los compañeros acepten la invitación.":"Team created. Registration will be confirmed when all teammates accept the invitation.",
+ "¡Invitación aceptada! Cuando todos los integrantes acepten, el equipo quedará inscrito.":"Invitation accepted! The team will be registered once all members accept.",
+ "SOLO: puntos de posición + 2 puntos por kill hasta 10 kills.":"SOLO: placement points + 2 points per kill, up to 10 kills.",
+ "DUO/SQUAD: ingresa los puntos manuales según las reglas que defina el organizador.":"DUO/SQUAD: enter manual points according to the organizer's rules.",
+ "PUNTOS":"POINTS","KILLS":"KILLS","PARTIDAS":"MATCHES","Jugador / Equipo":"Player / Team","Kills / partida":"Kills / Match",
+ "Registrado":"Registered","Aprobado":"Approved","Pendiente":"Pending","Rechazado":"Rejected","Abierto":"Open","Finalizado":"Finished","Borrador":"Draft",
+ "Crea el equipo e invita a compañeros aprobados. Cada invitado debe aceptar:":"Create a team and invite approved teammates. Each invitee must accept:",
+ "Escribe el nombre del equipo y exactamente ":"Enter the team name and exactly ",
+ "UID de compañero":"Teammate UID","UID 1, UID 2, UID 3":"UID 1, UID 2, UID 3",
+ "La imagen debe pesar menos de 3 MB.":"Image must be smaller than 3 MB.","Usa una imagen JPG, PNG o WEBP.":"Use a JPG, PNG, or WEBP image.","Solo puedes cambiar tu propio avatar.":"You can only change your own avatar."
+ };
+ let language='es';
+ const original=new WeakMap();
+ function translateNode(node){
+   if(node.nodeType===Node.TEXT_NODE){
+     const raw=node.nodeValue, key=raw.trim();
+     if(!key)return;
+     if(!original.has(node))original.set(node,raw);
+     const source=original.get(node), sourceKey=source.trim();
+     if(language==='en'&&translations[sourceKey])node.nodeValue=source.replace(sourceKey,translations[sourceKey]);
+     else node.nodeValue=source;
+   }else if(node.nodeType===Node.ELEMENT_NODE){
+     ['placeholder','title','aria-label','alt'].forEach(attr=>{
+       if(node.hasAttribute(attr)){
+         const key='data-i18n-original-'+attr;
+         if(!node.hasAttribute(key))node.setAttribute(key,node.getAttribute(attr));
+         const source=node.getAttribute(key);
+         node.setAttribute(attr,language==='en'?(translations[source]||source):source);
+       }
+     });
+     if(node.id==='notificationBadge')return;
+     Array.from(node.childNodes).forEach(translateNode);
+   }
+ }
+ function applyLanguage(lang){
+   language=lang==='en'?'en':'es';
+   document.documentElement.lang=language;
+   document.title=language==='en'?'SCRIMS RTG | CUBEX POINTS MANAGER':'SCRIMS RTG | CUBEX POINTS MANAGER';
+   document.querySelectorAll('#langES,#langEN').forEach(b=>{const active=b.id===(language==='es'?'langES':'langEN');b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
+   translateNode(document.body);
+   try{localStorage.setItem('scrims-rtg-language',language)}catch(e){}
+ }
+ const saved=(()=>{try{return localStorage.getItem('scrims-rtg-language')}catch(e){return null}})();
+ document.addEventListener('DOMContentLoaded',()=>{
+   $('langES')?.addEventListener('click',()=>applyLanguage('es'));
+   $('langEN')?.addEventListener('click',()=>applyLanguage('en'));
+   applyLanguage(saved||'es');
+   const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(translateNode)));
+   observer.observe(document.body,{childList:true,subtree:true});
+ });
+})();
+</script>
 </body></html>
