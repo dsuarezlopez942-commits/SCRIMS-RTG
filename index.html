@@ -321,7 +321,7 @@ button,.tab{min-height:42px}
 <div class="card half"><h3>Crear cuenta de jugador</h3><form id="signupForm">
 <label>Nickname de Creative Destruction<input id="suNickname" maxlength="24" required placeholder="Tu nickname"></label>
 <label>UID de Creative Destruction<input id="suUid" maxlength="40" required placeholder="Tu UID"></label>
-<div class="row"><label>Modalidad<select id="suMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label>Equipo (opcional)<input id="suTeam" maxlength="30" placeholder="Nombre del equipo"></label></div>
+
 <label>Correo electrónico<input id="suEmail" type="email" autocomplete="email" required placeholder="correo@ejemplo.com"></label>
 <label>Contraseña<input id="suPassword" type="password" minlength="8" autocomplete="new-password" required placeholder="Mínimo 8 caracteres"></label>
 <button class="primary">Crear mi cuenta</button><div id="signupMsg" aria-live="polite"></div></form><div class="notice">Usa únicamente tu correo y una contraseña nueva para SCRIMS RTG. Nunca ingreses la contraseña de Creative Destruction. Confirma tu correo si Supabase te lo solicita.</div></div>
@@ -384,7 +384,6 @@ function msg(id,text,error=false){const el=$(id);el.className=error?'status erro
 function nav(view){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==view));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===view));if(view==='jugadores'||view==='clasificacion'||view==='torneos'||view==='admin'||view==='notificaciones')refresh();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.view)));
 document.querySelectorAll('.mode-action').forEach(b=>b.addEventListener('click',()=>{
- $('suMode').value=b.dataset.mode;
  nav('cuenta');
  window.scrollTo({top:0,behavior:'smooth'});
 }));
@@ -402,7 +401,7 @@ async function refresh(){
  $('countPlayers').textContent=approved.length;$('countTournaments').textContent=tournaments.filter(t=>t.status!=='Borrador').length;$('countResults').textContent=results.length;
  $('homeTournaments').innerHTML=table(tournaments.filter(t=>t.status!=='Borrador').slice(0,5).map(t=>'<tr><td><b>'+esc(t.name)+'</b></td><td>'+t.mode+'</td><td>'+esc(t.status)+'</td></tr>'),['Torneo','Modo','Estado']);
  const fm=$('filterMode').value;const visible=approved.filter(p=>fm==='TODOS'||p.mode===fm);
- $('playersTable').innerHTML=visible.length?visible.map(p=>'<article class="player-card"><div class="player-avatar">'+esc((p.nickname||'?').trim().slice(0,2).toUpperCase())+'</div><div class="player-card-info"><b>'+esc(p.nickname)+'</b><small>'+p.mode+' · '+esc(p.team_name||'Sin equipo')+'</small></div><button class="small" type="button" data-profile="'+p.id+'">Ver perfil</button></article>').join(''):'<div class="empty" style="grid-column:1/-1">Todavía no hay jugadores aprobados.</div>';
+ $('playersTable').innerHTML=visible.length?visible.map(p=>'<article class="player-card"><div class="player-avatar">'+esc((p.nickname||'?').trim().slice(0,2).toUpperCase())+'</div><div class="player-card-info"><b>'+esc(p.nickname)+'</b><small>'+(p.mode||'Disponible para todas las modalidades')+' · '+esc(p.team_name||'Sin equipo')+'</small></div><button class="small" type="button" data-profile="'+p.id+'">Ver perfil</button></article>').join(''):'<div class="empty" style="grid-column:1/-1">Todavía no hay jugadores aprobados.</div>';
  document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>showPlayerProfile(b.dataset.profile));
  renderTournamentCards();$('myRegistrations').innerHTML=user?renderMyRegistrations():'Inicia sesión para consultar tus inscripciones.';
  $('tournamentHistory').innerHTML=renderTournamentHistory();if(isAdmin)renderAdminRegistrations();
@@ -478,7 +477,6 @@ function renderTournamentCards(){
   else if(closed||full)action='<span class="pill wait">'+(full?'Cupo completo':'Inscripciones cerradas')+'</span>';
   else if(!user)action='<span class="registration-note">Inicia sesión para inscribirte.</span>';
   else if(!profile||profile.status!=='Aprobado')action='<span class="registration-note">Tu cuenta debe estar aprobada.</span>';
-  else if(profile.mode!==t.mode)action='<span class="registration-note">Tu cuenta está registrada en '+esc(profile.mode)+'.</span>';
   else if(t.mode==='SOLO')action='<button class="primary" data-register-solo="'+t.id+'">Inscribirme</button>';
   else action='<div class="registration-note">Crea el equipo e invita a compañeros aprobados. Cada invitado debe aceptar: '+(t.mode==='DUO'?'1':'3')+'.</div><input id="teamName-'+t.id+'" maxlength="40" placeholder="Nombre del equipo"><input id="teamUids-'+t.id+'" placeholder="'+(t.mode==='DUO'?'UID de compañero':'UID 1, UID 2, UID 3')+'"><button class="primary" data-register-team="'+t.id+'" data-mode="'+t.mode+'">Crear equipo e inscribir</button>';
   const adminAction=isAdmin?'<button class="small" data-toggle-registration="'+t.id+'">'+(t.registration_open?'Cerrar inscripciones':'Abrir inscripciones')+'</button><button class="small danger" data-delete-tournament="'+t.id+'">Eliminar torneo</button>':'';
@@ -563,7 +561,7 @@ function renderAdmin(){
  document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=()=>changeStatus(b.dataset.approve,'Aprobado'));
  document.querySelectorAll('[data-reject]').forEach(b=>b.onclick=()=>changeStatus(b.dataset.reject,'Rechazado'));
  $('rTournament').innerHTML=tournaments.filter(t=>t.status!=='Borrador').map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
- $('rPlayer').innerHTML=players.filter(p=>p.status==='Aprobado').map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · '+p.mode+'</option>').join(''); $('exportResultsBtn').onclick=()=>{const rows=[['torneo','modalidad','participante','posicion','kills','puntos'],...results.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,'SOLO',players.find(p=>p.id===r.player_id)?.nickname,r.placement,r.kills,r.points]),...teamResults.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,teams.find(t=>t.id===r.team_id)?.mode,teams.find(t=>t.id===r.team_id)?.name,r.placement,r.kills,r.points])];const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='scrims-rtg-resultados.csv';a.click();URL.revokeObjectURL(a.href)};
+ $('rPlayer').innerHTML=players.filter(p=>p.status==='Aprobado').map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · '+(p.mode||'Todas')+'</option>').join(''); $('exportResultsBtn').onclick=()=>{const rows=[['torneo','modalidad','participante','posicion','kills','puntos'],...results.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,'SOLO',players.find(p=>p.id===r.player_id)?.nickname,r.placement,r.kills,r.points]),...teamResults.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,teams.find(t=>t.id===r.team_id)?.mode,teams.find(t=>t.id===r.team_id)?.name,r.placement,r.kills,r.points])];const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='scrims-rtg-resultados.csv';a.click();URL.revokeObjectURL(a.href)};
 }
 function renderPlayerBans(){
  const select=$('banPlayerSelect');
@@ -669,7 +667,7 @@ async function sessionChanged(sessionOverride,eventName){
  }
 }
 $('signupForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;const email=$('suEmail').value.trim(),password=$('suPassword').value;if(password.length<8){msg('signupMsg','La contraseña debe tener al menos 8 caracteres.',true);return}
- const {data,error}=await sb.auth.signUp({email,password,options:{data:{nickname:$('suNickname').value.trim(),game_uid:$('suUid').value.trim(),mode:$('suMode').value,team_name:$('suTeam').value.trim()}}});
+ const {data,error}=await sb.auth.signUp({email,password,options:{data:{nickname:$('suNickname').value.trim(),game_uid:$('suUid').value.trim()}}});
  if(error){msg('signupMsg',error.message,true);return}msg('signupMsg',data.session?'Cuenta creada. Ya puedes iniciar sesión.':'Cuenta creada. Revisa tu correo para confirmar la dirección y luego inicia sesión.');e.target.reset();await sessionChanged();
 });
 const rememberedEmail=localStorage.getItem('scrims-rtg-remembered-email')||'';
