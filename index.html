@@ -386,6 +386,7 @@ function soloPlacement(p){const scores={25:1,24:2,23:3,22:4,21:5,20:6,19:7,18:8,
 function table(rows,heads){if(!rows.length)return '<div class="empty">Todavía no hay registros.</div>';return '<div style="overflow-x:auto"><table><thead><tr>'+heads.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>'}
 async function refresh(){
  if(!sb)return;
+ if(user&&!user.id){user=null;profile=null;isAdmin=false;registrations=[];myTeamIds=[];teamInvites=[];notifications=[];}
  const [pr,tr]=await Promise.all([sb.from('profiles').select('id,nickname,game_uid,mode,team_name,status,role,avatar_url,created_at').order('created_at',{ascending:false}),sb.from('tournaments').select('*').order('created_at',{ascending:false})]);
  if(pr.error)console.warn(pr.error);else players=pr.data||[];
  if(tr.error)console.warn(tr.error);else tournaments=tr.data||[];
@@ -497,9 +498,9 @@ function renderMyRegistrations(){
  if(!mine.length)return '<div class="empty">Todavía no tienes inscripciones activas.</div>';
  return table(mine.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),team=teams.find(x=>x.id===r.team_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>'+(team?esc(team.name):'Individual')+'</td><td><span class="pill ok">'+r.status+'</span></td></tr>'}),['Torneo','Participación','Estado']);
 }
-async function registerSolo(tid){const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session){user=null;await sessionChanged();alert('Tu sesión no está activa. Inicia sesión nuevamente para inscribirte.');return}const {error}=await sb.rpc('register_solo_tournament',{target_tournament:tid});if(error){alert(error.message);return}alert('¡Inscripción confirmada!');await refresh()}
+async function registerSolo(tid){const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session?.user?.id){user=null;await sessionChanged();alert('No hay una sesión activa en este navegador. Inicia sesión y espera a que aparezca tu correo antes de inscribirte.');return}const {error}=await sb.rpc('register_solo_tournament',{target_tournament:tid});if(error){alert(error.message);return}alert('¡Inscripción confirmada!');await refresh()}
 async function registerTeam(tid,mode){
- const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session){user=null;await sessionChanged();alert('Tu sesión no está activa. Inicia sesión nuevamente para crear tu equipo.');return}
+ const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError||!session?.user?.id){user=null;await sessionChanged();alert('No hay una sesión activa en este navegador. Inicia sesión y espera a que aparezca tu correo antes de crear el equipo.');return}
  const name=$('teamName-'+tid).value.trim(),uids=$('teamUids-'+tid).value.split(',').map(x=>x.trim()).filter(Boolean),needed=mode==='DUO'?1:3;
  if(!name||uids.length!==needed){alert('Escribe el nombre del equipo y exactamente '+needed+' UID(s), separados por comas.');return}
  const {error}=await sb.rpc('create_and_register_team',{target_tournament:tid,team_name:name,teammate_uids:uids});if(error){alert(error.message);return}alert('Equipo creado. La inscripción se confirmará cuando todos los compañeros acepten la invitación.');await refresh()
@@ -580,11 +581,29 @@ $('grantAdminBtn').addEventListener('click',async()=>{
  await refresh();
 });
 async function changeStatus(id,status){const {error}=await sb.from('profiles').update({status}).eq('id',id);if(error)alert(error.message);else await refresh()}
+let sessionCheckInProgress=false;
 async function sessionChanged(){
- const {data}=await sb.auth.getUser();user=data.user||null;profile=null;isAdmin=false;
- if(user){const {data:p,error}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();if(!error)profile=p;isAdmin=profile?.role==='admin';$('sessionInfo').textContent=user.email+' · '+(isAdmin?'Administrador':profile?.status||'Cuenta registrada');$('adminGate').textContent=isAdmin?'Acceso administrativo habilitado.':'Tu cuenta no tiene permisos de administrador.';$('adminPanel').classList.toggle('hidden',!isAdmin);$('adminTab').classList.toggle('hidden',!isAdmin);$('logoutBtn').classList.remove('hidden');}
- else{$('sessionInfo').textContent='No has iniciado sesión.';$('adminGate').textContent='Inicia sesión con tu cuenta de administrador para acceder a las herramientas.';$('adminPanel').classList.add('hidden');$('adminTab').classList.add('hidden');$('logoutBtn').classList.add('hidden')}
- await refresh();
+ if(!sb||sessionCheckInProgress)return;
+ sessionCheckInProgress=true;
+ try{
+  const {data,error}=await sb.auth.getSession();
+  if(error)console.warn('No se pudo recuperar la sesión local:',error.message);
+  user=data?.session?.user||null;profile=null;isAdmin=false;
+  if(user?.id){
+   const {data:p,error:profileError}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+   if(!profileError)profile=p;
+   isAdmin=profile?.role==='admin';
+   $('sessionInfo').textContent=(user.email||'Cuenta autenticada')+' · '+(isAdmin?'Administrador':profile?.status||'Cuenta registrada');
+   $('adminGate').textContent=isAdmin?'Acceso administrativo habilitado.':'Tu cuenta no tiene permisos de administrador.';
+   $('adminPanel').classList.toggle('hidden',!isAdmin);$('adminTab').classList.toggle('hidden',!isAdmin);$('logoutBtn').classList.remove('hidden');
+  }else{
+   $('sessionInfo').textContent='No has iniciado sesión.';
+   $('adminGate').textContent='Inicia sesión con tu cuenta para acceder a las herramientas.';
+   $('adminPanel').classList.add('hidden');$('adminTab').classList.add('hidden');$('logoutBtn').classList.add('hidden');
+  }
+  await refresh();
+ }catch(err){console.error('Error al actualizar la sesión:',err);user=null;profile=null;isAdmin=false;await refresh();}
+ finally{sessionCheckInProgress=false;}
 }
 $('signupForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;const email=$('suEmail').value.trim(),password=$('suPassword').value;if(password.length<8){msg('signupMsg','La contraseña debe tener al menos 8 caracteres.',true);return}
  const {data,error}=await sb.auth.signUp({email,password,options:{data:{nickname:$('suNickname').value.trim(),game_uid:$('suUid').value.trim(),mode:$('suMode').value,team_name:$('suTeam').value.trim()}}});
@@ -593,7 +612,26 @@ $('signupForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb)re
 const rememberedEmail=localStorage.getItem('scrims-rtg-remembered-email')||'';
 if(rememberedEmail){$('liEmail').value=rememberedEmail;$('rememberEmail').checked=true}
 $('rememberEmail').addEventListener('change',()=>{if(!$('rememberEmail').checked)localStorage.removeItem('scrims-rtg-remembered-email')});
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb){msg('loginMsg','El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.',true);return}const email=$('liEmail').value.trim();if($('rememberEmail').checked)localStorage.setItem('scrims-rtg-remembered-email',email);else localStorage.removeItem('scrims-rtg-remembered-email');const {error}=await sb.auth.signInWithPassword({email,password:$('liPassword').value});if(error){msg('loginMsg',error.message,true);return}msg('loginMsg','Sesión iniciada correctamente.');await sessionChanged()});
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(!sb){msg('loginMsg','El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.',true);return}
+ const button=e.submitter;if(button)button.disabled=true;
+ const email=$('liEmail').value.trim();
+ if($('rememberEmail').checked)localStorage.setItem('scrims-rtg-remembered-email',email);else localStorage.removeItem('scrims-rtg-remembered-email');
+ try{
+  const {data,error}=await sb.auth.signInWithPassword({email,password:$('liPassword').value});
+  if(error){
+   const rateLimited=error.status===429||/too many requests|rate limit/i.test(error.message||'');
+   msg('loginMsg',rateLimited?'Supabase limitó temporalmente los intentos de acceso. No sigas intentando durante unos minutos; espera a que se libere el límite y vuelve a iniciar sesión.':error.message,true);
+   return;
+  }
+  if(!data?.session?.user){msg('loginMsg','Supabase no devolvió una sesión válida. Espera un momento y vuelve a intentarlo.',true);return}
+  user=data.session.user;
+  msg('loginMsg','Sesión iniciada correctamente.');
+  await sessionChanged();
+ }catch(err){console.error('Error de inicio de sesión:',err);msg('loginMsg','No se pudo completar el inicio de sesión. Espera unos minutos y vuelve a intentarlo.',true)}
+ finally{if(button)button.disabled=false}
+});
 $('forgotPasswordBtn').addEventListener('click',()=>{$('recoveryEmail').value=$('liEmail').value.trim();$('forgotPasswordPanel').classList.toggle('hidden')});
 $('forgotPasswordForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb){msg('recoveryMsg','El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.',true);return}const email=$('recoveryEmail').value.trim();const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(error){msg('recoveryMsg',error.message,true);return}msg('recoveryMsg','Si el correo está registrado, recibirás un enlace para crear una nueva contraseña. Revisa también spam.')});
 $('newPasswordForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb){msg('newPasswordMsg','El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.',true);return}const pass=$('newPassword').value;if(pass.length<8){msg('newPasswordMsg','Usa al menos 8 caracteres.',true);return}if(pass!==$('confirmNewPassword').value){msg('newPasswordMsg','Las contraseñas no coinciden.',true);return}const {error}=await sb.auth.updateUser({password:pass});if(error){msg('newPasswordMsg',error.message,true);return}msg('newPasswordMsg','Contraseña actualizada correctamente. Ya puedes iniciar sesión con tu nueva contraseña.');$('newPasswordForm').reset();$('newPasswordPanel').classList.add('hidden')});
