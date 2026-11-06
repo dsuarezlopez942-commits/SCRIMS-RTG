@@ -512,7 +512,7 @@ async function registerTeam(tid,mode){
 }
 function renderAdminRegistrations(){
  const active=registrations.filter(r=>r.status!=='Cancelado');
- $('adminRegistrations').innerHTML=table(active.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),p=players.find(x=>x.id===r.player_id),team=teams.find(x=>x.id===r.team_id);return '<tr><td>'+esc(t?.name||'Torneo')+'</td><td>'+esc(team?.name||p?.nickname||'Participante')+'</td><td>'+esc(t?.mode||'')+'</td><td><button class="small danger" data-cancel-reg="'+r.id+'">Cancelar</button></td></tr>'}),['Torneo','Jugador / Equipo','Modo','Acción']);
+ $('adminRegistrations').innerHTML=table(active.map((r,i)=>{const t=tournaments.find(x=>x.id===r.tournament_id),p=players.find(x=>x.id===r.player_id),team=teams.find(x=>x.id===r.team_id);return '<tr><td><b>'+(i+1)+'</b></td><td>'+esc(t?.name||'Torneo')+'</td><td>'+esc(team?.name||p?.nickname||'Participante')+'</td><td>'+esc(t?.mode||'')+'</td><td><button class="small danger" data-cancel-reg="'+r.id+'">Cancelar</button></td></tr>'}),['N.º','Torneo','Jugador / Equipo','Modo','Acción']);
  document.querySelectorAll('[data-cancel-reg]').forEach(b=>b.onclick=async()=>{if(!confirm('¿Cancelar esta inscripción?'))return;const {error}=await sb.from('tournament_registrations').update({status:'Cancelado'}).eq('id',b.dataset.cancelReg);if(error)alert(error.message);else await refresh()});
 }
 function renderTournamentSettings(){
