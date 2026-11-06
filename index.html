@@ -651,6 +651,25 @@ $('rTournament').addEventListener('change',()=>{const t=tournaments.find(x=>x.id
 if(!window.SCRIMS_CONFIG||!window.supabase){setConnection('No se pudo cargar la configuración o la librería de Supabase. Revisa config.js y la conexión a internet.',false);return}
 sb=window.supabase.createClient(window.SCRIMS_CONFIG.supabaseUrl,window.SCRIMS_CONFIG.supabaseAnonKey);
 window.scrimsSupabase=sb;
+// Recuperación local de sesiones cuyo refresh token recibe HTTP 429.
+// Solo limpia la sesión de ESTE navegador; no toca la cuenta ni el perfil en Supabase.
+let scrimsLocalAuthRecovery=false;
+window.addEventListener('unhandledrejection',async event=>{
+ const err=event.reason;
+ const detail=[err?.message,err?.name,err?.status,err?.code,err?.context?.status].filter(Boolean).join(' ');
+ if(scrimsLocalAuthRecovery||!(/429|too many requests|rate limit/i.test(detail)&&/refresh|token|auth/i.test(detail)))return;
+ scrimsLocalAuthRecovery=true;
+ event.preventDefault();
+ console.warn('SCRIMS RTG: sesión local con error de renovación. Se limpiará únicamente en este navegador.');
+ try{await sb.auth.signOut({scope:'local'})}catch(cleanError){console.warn('No se pudo limpiar la sesión local automáticamente:',cleanError)}
+ user=null;profile=null;isAdmin=false;
+ $('sessionInfo').textContent='Sesión anterior restablecida. Inicia sesión nuevamente.';
+ $('loginMsg').textContent='Detectamos una sesión guardada que no se pudo renovar. Ya se restableció en este navegador; espera a que termine el límite temporal de acceso y vuelve a iniciar sesión.';
+ $('loginMsg').className='status error';
+ $('logoutBtn').classList.add('hidden');
+ $('adminPanel').classList.add('hidden');$('adminTab').classList.add('hidden');
+ try{await refresh()}catch(refreshError){console.warn(refreshError)}
+});
 setConnection('Conexión inicial con Supabase establecida. Los datos se cargarán según los permisos de cada usuario.',true);
 sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){$('newPasswordPanel').classList.remove('hidden');$('forgotPasswordPanel').classList.add('hidden');$('newPasswordPanel').scrollIntoView({behavior:'smooth',block:'center'})}setTimeout(sessionChanged,0)});sessionChanged();
 })();
