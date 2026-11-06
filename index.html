@@ -254,6 +254,14 @@ button,.tab{min-height:42px}
 .tutorial-actions .right{display:flex;gap:8px;margin-left:auto}
 .tutorial-dialog button{min-height:40px}
 @media(max-width:700px){.header-actions{justify-content:flex-end}.tutorial-launch{font-size:10px;padding:7px 9px}.tutorial-dialog{padding:18px;border-radius:15px}.tutorial-actions .right{width:100%;justify-content:flex-end}}
+.global-announcement-overlay{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:18px;background:#030307ed;backdrop-filter:blur(12px);animation:globalNoticeFade .22s ease}
+.global-announcement-overlay.hidden{display:none!important}.global-announcement-box{position:relative;width:min(680px,100%);max-height:88vh;overflow:auto;padding:clamp(24px,5vw,42px);border:2px solid #d5a83e;border-radius:22px;background:radial-gradient(ellipse at 50% 0,#69491d55,transparent 55%),linear-gradient(145deg,#211b12,#101014 70%);box-shadow:0 0 0 5px #d5a83e20,0 25px 100px #000}
+.global-announcement-label{font-size:11px;font-weight:950;letter-spacing:2.2px;color:#ffd56a;text-align:center;padding-right:25px}.global-announcement-close{position:absolute;right:14px;top:12px;font-size:18px!important;color:#ddd!important}
+.global-announcement-symbol{text-align:center;font-size:48px;line-height:1.2;margin:20px 0 10px;filter:drop-shadow(0 0 18px #f5b94288)}.global-announcement-box h2{text-align:center;font-size:clamp(24px,5vw,38px);line-height:1.12;color:#fff;margin:10px 0 16px;text-transform:uppercase;text-wrap:balance}
+.global-announcement-box p{white-space:pre-wrap;text-align:center;color:#e4e0d8;font-size:clamp(15px,2.5vw,18px);line-height:1.8;margin:0 auto;max-width:560px;overflow-wrap:anywhere}.global-announcement-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:28px;padding-top:18px;border-top:1px solid #ffffff20}
+.global-announcement-footer span{font-size:10px;letter-spacing:1.4px;color:#b8a98a;font-weight:800}.global-announcement-box.level-urgent{border-color:#ff5367;box-shadow:0 0 0 5px #ff536722,0 25px 100px #000}.global-announcement-box.level-urgent .global-announcement-label{color:#ff8997}.global-announcement-box.level-info{border-color:#8b9cff}.global-announcement-box.level-info .global-announcement-label{color:#b9c4ff}
+@keyframes globalNoticeFade{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:no-preference){.global-announcement-box{animation:globalNoticePop .28s cubic-bezier(.2,.8,.2,1)}@keyframes globalNoticePop{from{transform:translateY(18px) scale(.97);opacity:.4}to{transform:none;opacity:1}}}
+@media(max-width:560px){.global-announcement-footer{justify-content:center;text-align:center}.global-announcement-footer span{width:100%}.global-announcement-close{right:8px;top:8px}}
 </style>
 </head>
 <body>
@@ -324,7 +332,14 @@ button,.tab{min-height:42px}
 <section id="notificaciones" class="view hidden"><div class="card"><h3>Centro de notificaciones</h3><p class="muted">Avisos de torneos, inscripciones, invitaciones, aprobación de cuenta y resultados.</p><div class="actions" style="margin-bottom:12px"><button type="button" id="markAllNotifications" class="small">Marcar todas como leídas</button></div><div id="notificationsList" class="empty">Inicia sesión para ver tus notificaciones.</div></div></section>
 <section id="clasificacion" class="view hidden"><div class="card"><h3>Tabla de clasificación</h3><label style="max-width:180px;margin-bottom:12px">Modalidad<select id="rankMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><div id="rankingPodium" class="rank-podium"><div class="empty">Cargando podio…</div></div><div id="rankingTable" class="empty">Cargando…</div><p class="muted">Los puntos se acumulan a partir de los resultados registrados por el administrador.</p></div></section>
 <section id="admin" class="view grid hidden">
-<div class="card"><h3>Panel administrativo</h3><div id="adminGate" class="muted">Inicia sesión con tu cuenta de administrador para acceder a las herramientas.</div><div id="adminPanel" class="hidden">
+<div class="card"><h3>Panel administrativo</h3><div id="adminGate" class="muted">Inicia sesión con tu cuenta de administrador para acceder a las herramientas.</div><div id="adminPanel" class="hidden"><div id="globalAnnouncementsAdmin" class="admin-list hidden" style="margin-top:22px">
+<h3>📢 Avisos globales</h3><p class="muted">Comunicados destacados para todos. Permanecen activos hasta que un administrador los desactive.</p>
+<form id="globalAnnouncementForm">
+<label>Título del aviso<input id="globalAnnouncementTitle" maxlength="90" required placeholder="Ej. MANTENIMIENTO PROGRAMADO"></label>
+<label>Mensaje importante<textarea id="globalAnnouncementMessage" maxlength="1200" required rows="4" style="width:100%;background:#0b0b0e;color:#f5f5f4;border:1px solid #35353d;border-radius:9px;padding:12px;font:inherit"></textarea></label>
+<label>Nivel<select id="globalAnnouncementLevel"><option value="important">Importante</option><option value="urgent">Urgente</option><option value="info">Informativo</option></select></label>
+<button class="primary" type="submit">📢 PUBLICAR AVISO PARA TODOS</button><div id="globalAnnouncementStatus" aria-live="polite"></div>
+</form><div style="margin-top:18px"><h3>Avisos activos</h3><div id="globalAnnouncementAdminList" class="muted">Cargando avisos…</div></div></div>
 <h3>Solicitudes de jugadores</h3><div id="pendingTable" class="empty">Cargando…</div>
 <div class="row" style="margin-top:22px"><div><h3>Crear torneo</h3><form id="tournamentForm"><label>Nombre del torneo<input id="tName" maxlength="80" required placeholder="Ej. SCRIMS RTG #1"></label><label>Modalidad<select id="tMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label>Fecha y hora (opcional)<input id="tDate" type="datetime-local"></label><label>Cupo máximo (jugadores o equipos)<input id="tSlots" type="number" min="1" max="1000" value="100" required></label><label>Cierre de inscripciones (opcional)<input id="tClose" type="datetime-local"></label><button class="primary">Crear torneo</button><div id="tournamentMsg"></div></form></div>
 <div><h3>Cargar resultado</h3><form id="resultForm"><label>Torneo<select id="rTournament" required></select></label><label>Jugador aprobado<select id="rPlayer" required></select></label><div class="row"><label>Posición final<input id="rPlacement" type="number" min="1" max="100" value="1" required></label><label>Kills<input id="rKills" type="number" min="0" value="0" required></label></div><label id="manualPointsLabel">Puntos manuales (DUO/SQUAD)<input id="rPoints" type="number" min="0" value="0"></label><div class="notice" id="scoreHint">SOLO: se calcula automáticamente según la tabla de posiciones y 2 puntos por kill hasta 10 kills.</div><button class="primary">Guardar resultado</button><div id="resultMsg"></div></form></div></div>
@@ -332,6 +347,11 @@ button,.tab{min-height:42px}
 </div></div>
 <div class="card half"><h3>Reglas de puntuación SOLO</h3><p class="muted">Kills: 2 puntos por eliminación, hasta la kill 10.</p><p class="muted">Posición: Top 25=1, 24=2, 23=3, 22=4, 21=5, 20=6, 19=7, 18=8, 17=10, 16=11, 15=14, 14=16, 13=18, 12=20, 11=22, 10=24, 9=28, 8=32, 7=36, 6=40, 5=45, 4=50, 3=55, 2=60, 1=65.</p><p class="muted">DUO y SQUAD quedan con puntos manuales hasta que confirmes sus reglas.</p></div>
 </section>
+<div id="globalAnnouncementOverlay" class="global-announcement-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="globalAnnouncementDisplayTitle">
+<div class="global-announcement-box"><div class="global-announcement-label" id="globalAnnouncementDisplayLabel">📢 COMUNICADO OFICIAL · SCRIMS RTG</div>
+<button type="button" id="globalAnnouncementClose" class="global-announcement-close" aria-label="Cerrar aviso">✕</button>
+<div class="global-announcement-symbol" id="globalAnnouncementSymbol">⚠️</div><h2 id="globalAnnouncementDisplayTitle"></h2><p id="globalAnnouncementDisplayMessage"></p>
+<div class="global-announcement-footer"><span>SCRIMS RTG · CUBEX ESPORTS</span><button type="button" id="globalAnnouncementAcknowledge" class="primary">ENTENDIDO</button></div></div></div>
 </main><footer>SCRIMS RTG · CUBEX ESPORTS · CREATIVE DESTRUCTION</footer>
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -542,6 +562,24 @@ if(!window.SCRIMS_CONFIG||!window.supabase){setConnection('No se pudo cargar la 
 sb=window.supabase.createClient(window.SCRIMS_CONFIG.supabaseUrl,window.SCRIMS_CONFIG.supabaseAnonKey);
 setConnection('Conexión inicial con Supabase establecida. Los datos se cargarán según los permisos de cada usuario.',true);
 sb.auth.onAuthStateChange(()=>{setTimeout(sessionChanged,0)});sessionChanged();
+})();
+</script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+if(!window.SCRIMS_CONFIG||!window.supabase)return;
+const client=window.supabase.createClient(window.SCRIMS_CONFIG.supabaseUrl,window.SCRIMS_CONFIG.supabaseAnonKey);
+let admin=false,active=[],current=null,channel=null;
+function show(a){if(!a)return;try{if(sessionStorage.getItem('scrims-global-announcement-seen-'+a.id)==='1')return}catch(e){}current=a;const panel=$('globalAnnouncementOverlay').querySelector('.global-announcement-box');panel.className='global-announcement-box level-'+(a.level||'important');$('globalAnnouncementDisplayLabel').textContent=(a.level==='urgent'?'🚨 AVISO URGENTE':a.level==='info'?'📌 INFORMACIÓN IMPORTANTE':'📢 COMUNICADO OFICIAL')+' · SCRIMS RTG';$('globalAnnouncementSymbol').textContent=a.level==='urgent'?'🚨':a.level==='info'?'📌':'⚠️';$('globalAnnouncementDisplayTitle').textContent=a.title;$('globalAnnouncementDisplayMessage').textContent=a.message;$('globalAnnouncementOverlay').classList.remove('hidden')}
+function dismiss(){if(current)try{sessionStorage.setItem('scrims-global-announcement-seen-'+current.id,'1')}catch(e){}$('globalAnnouncementOverlay').classList.add('hidden');current=null}
+$('globalAnnouncementClose').addEventListener('click',dismiss);$('globalAnnouncementAcknowledge').addEventListener('click',dismiss);
+function renderAdmin(){const host=$('globalAnnouncementAdminList');if(!host)return;host.innerHTML=active.length?active.map(a=>'<article class="tournament-card" style="margin:9px 0"><div class="actions" style="justify-content:space-between"><b>'+esc(a.title)+'</b><span class="pill">'+(a.level==='urgent'?'URGENTE':a.level==='info'?'INFO':'IMPORTANTE')+'</span></div><p class="muted">'+esc(a.message)+'</p><small class="muted">'+new Date(a.created_at).toLocaleString('es-BO')+'</small><div class="actions" style="margin-top:10px"><button type="button" class="danger small" data-deactivate-announcement="'+a.id+'">Desactivar aviso</button></div></article>').join(''):'<div class="empty">No hay avisos activos.</div>';host.querySelectorAll('[data-deactivate-announcement]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;const {error}=await client.from('scrims_announcements').update({active:false}).eq('id',btn.dataset.deactivateAnnouncement);if(error){alert('No se pudo desactivar: '+error.message);btn.disabled=false}else await loadActive()}))}
+async function loadActive(){const {data,error}=await client.from('scrims_announcements').select('id,title,message,level,created_at').eq('active',true).order('created_at',{ascending:false});if(error){console.warn('Avisos globales:',error.message);return}active=data||[];if(active.length)show(active[0]);else{$('globalAnnouncementOverlay').classList.add('hidden');current=null}if(admin)renderAdmin()}
+async function checkAdmin(){const {data:{user}}=await client.auth.getUser();if(!user){admin=false;$('globalAnnouncementsAdmin').classList.add('hidden');return}const {data}=await client.from('profiles').select('role').eq('id',user.id).maybeSingle();admin=data?.role==='admin';$('globalAnnouncementsAdmin').classList.toggle('hidden',!admin);if(admin)renderAdmin()}
+$('globalAnnouncementForm').addEventListener('submit',async e=>{e.preventDefault();if(!admin)return;const btn=e.submitter;btn.disabled=true;const payload={title:$('globalAnnouncementTitle').value.trim(),message:$('globalAnnouncementMessage').value.trim(),level:$('globalAnnouncementLevel').value,active:true};const {error}=await client.from('scrims_announcements').insert(payload);btn.disabled=false;const status=$('globalAnnouncementStatus');if(error){status.className='status error';status.textContent='No se pudo publicar. Ejecuta primero el SQL de avisos globales en Supabase.';console.error(error);return}status.className='status';status.textContent='¡Aviso publicado para todos!';$('globalAnnouncementForm').reset();await loadActive()});
+client.auth.onAuthStateChange(()=>setTimeout(checkAdmin,0));client.auth.getSession().then(async()=>{await checkAdmin();await loadActive()});
+channel=client.channel('scrims-global-announcements').on('postgres_changes',{event:'*',schema:'public',table:'scrims_announcements'},()=>loadActive()).subscribe();window.addEventListener('focus',loadActive);
 })();
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA no disponible:',err)));}</script>
