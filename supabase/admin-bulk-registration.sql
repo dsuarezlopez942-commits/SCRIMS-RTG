@@ -70,7 +70,10 @@ begin
           select 1 from public.scrim_team_members m where m.player_id = p.id
         )
       order by p.created_at, p.nickname
-      limit available_slots;
+      limit available_slots
+      on conflict (tournament_id, player_id)
+      where player_id is not null
+      do nothing;
       get diagnostics inserted_count = row_count;
     end if;
 
