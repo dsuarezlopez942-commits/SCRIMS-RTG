@@ -343,7 +343,21 @@ button,.tab{min-height:42px}
 <h3>Solicitudes de jugadores</h3><div id="pendingTable" class="empty">Cargando…</div>
 <div class="row" style="margin-top:22px"><div><h3>Crear torneo</h3><form id="tournamentForm"><label>Nombre del torneo<input id="tName" maxlength="80" required placeholder="Ej. SCRIMS RTG #1"></label><label>Modalidad<select id="tMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label>Fecha y hora (opcional)<input id="tDate" type="datetime-local"></label><label>Cupo máximo (jugadores o equipos)<input id="tSlots" type="number" min="1" max="1000" value="100" required></label><label>Cierre de inscripciones (opcional)<input id="tClose" type="datetime-local"></label><button class="primary">Crear torneo</button><div id="tournamentMsg"></div></form></div>
 <div><h3>Cargar resultado</h3><form id="resultForm"><label>Torneo<select id="rTournament" required></select></label><label>Jugador aprobado<select id="rPlayer" required></select></label><div class="row"><label>Posición final<input id="rPlacement" type="number" min="1" max="100" value="1" required></label><label>Kills<input id="rKills" type="number" min="0" value="0" required></label></div><label id="manualPointsLabel">Puntos manuales (DUO/SQUAD)<input id="rPoints" type="number" min="0" value="0"></label><div class="notice" id="scoreHint">SOLO: se calcula automáticamente según la tabla de posiciones y 2 puntos por kill hasta 10 kills.</div><button class="primary">Guardar resultado</button><div id="resultMsg"></div></form></div></div>
-<div class="admin-list"><h3>Cargar resultado de equipo (DUO/SQUAD)</h3><form id="teamResultForm"><label>Torneo<select id="trTournament" required></select></label><label>Equipo inscrito<select id="trTeam" required></select></label><div class="row"><label>Posición final<input id="trPlacement" type="number" min="1" value="1" required></label><label>Kills del equipo<input id="trKills" type="number" min="0" value="0" required></label></div><label>Puntos manuales del equipo<input id="trPoints" type="number" min="0" value="0" required></label><button class="primary">Guardar resultado de equipo</button><div id="teamResultMsg"></div></form><p class="muted">Los puntos DUO/SQUAD se cargan manualmente según las reglas oficiales del torneo.</p></div><div class="admin-list"><h3>Inscripciones recibidas</h3><div id="adminRegistrations" class="empty">Cargando inscripciones…</div></div><div class="admin-list" id="adminManagement"><h3>Administración de administradores</h3><p class="muted">Solo los administradores pueden acceder a este apartado. Asigna o retira permisos a jugadores con cuenta aprobada.</p><div class="row"><label>Jugador aprobado<select id="adminCandidate"><option value="">Selecciona un jugador</option></select></label><div style="display:flex;align-items:end"><button type="button" class="primary" id="grantAdminBtn">Convertir en administrador</button></div></div><div id="adminManagementMsg" class="muted" aria-live="polite"></div><h4 style="margin:18px 0 8px">Administradores actuales</h4><div id="adminsTable" class="empty">Cargando administradores…</div><p class="muted">Por seguridad, no puedes quitarte tu propio rol ni retirar el último administrador.</p></div><div class="actions" style="margin-top:18px"><button id="exportBtn" class="small">Exportar jugadores CSV</button><button id="exportResultsBtn" class="small">Exportar resultados CSV</button></div>
+<div class="admin-list"><h3>Cargar resultado de equipo (DUO/SQUAD)</h3><form id="teamResultForm"><label>Torneo<select id="trTournament" required></select></label><label>Equipo inscrito<select id="trTeam" required></select></label><div class="row"><label>Posición final<input id="trPlacement" type="number" min="1" value="1" required></label><label>Kills del equipo<input id="trKills" type="number" min="0" value="0" required></label></div><label>Puntos manuales del equipo<input id="trPoints" type="number" min="0" value="0" required></label><button class="primary">Guardar resultado de equipo</button><div id="teamResultMsg"></div></form><p class="muted">Los puntos DUO/SQUAD se cargan manualmente según las reglas oficiales del torneo.</p></div><div class="admin-list" id="playerBanManagement">
+<h3>🛡️ Sistema de baneos</h3>
+<p class="muted">Solo administradores. Registra infracciones, uso de trampas o incumplimiento de reglas. Los baneos activos bloquean nuevas inscripciones y cancelan las participaciones vigentes.</p>
+<form id="playerBanForm">
+<label>Jugador a sancionar<select id="banPlayerSelect" required><option value="">Selecciona un jugador</option></select></label>
+<label>Motivo del baneo<textarea id="banReason" maxlength="1000" minlength="5" required rows="3" placeholder="Describe la infracción y la regla incumplida." style="width:100%;background:#0b0b0e;color:#f5f5f4;border:1px solid #35353d;border-radius:9px;padding:12px;font:inherit"></textarea></label>
+<label>Enlace de evidencia (opcional)<input id="banEvidence" type="url" maxlength="1000" placeholder="https://…"></label>
+<label>Duración<select id="banDuration"><option value="permanent">Permanente</option><option value="temporary">Temporal</option></select></label>
+<label id="banExpiryLabel" class="hidden">Fecha y hora de finalización<input id="banExpiresAt" type="datetime-local"></label>
+<button type="submit" class="danger">🚫 APLICAR BANEO</button><div id="playerBanStatus" aria-live="polite"></div>
+</form>
+<h4 style="margin:20px 0 8px">Baneos activos</h4><div id="activePlayerBans" class="empty">Cargando baneos…</div>
+<h4 style="margin:20px 0 8px">Historial de sanciones</h4><div id="playerBanHistory" class="empty">Cargando historial…</div>
+</div>
+<div class="admin-list"><h3>Inscripciones recibidas</h3><div id="adminRegistrations" class="empty">Cargando inscripciones…</div></div><div class="admin-list" id="adminManagement"><h3>Administración de administradores</h3><p class="muted">Solo los administradores pueden acceder a este apartado. Asigna o retira permisos a jugadores con cuenta aprobada.</p><div class="row"><label>Jugador aprobado<select id="adminCandidate"><option value="">Selecciona un jugador</option></select></label><div style="display:flex;align-items:end"><button type="button" class="primary" id="grantAdminBtn">Convertir en administrador</button></div></div><div id="adminManagementMsg" class="muted" aria-live="polite"></div><h4 style="margin:18px 0 8px">Administradores actuales</h4><div id="adminsTable" class="empty">Cargando administradores…</div><p class="muted">Por seguridad, no puedes quitarte tu propio rol ni retirar el último administrador.</p></div><div class="actions" style="margin-top:18px"><button id="exportBtn" class="small">Exportar jugadores CSV</button><button id="exportResultsBtn" class="small">Exportar resultados CSV</button></div>
 </div></div>
 <div class="card half"><h3>Reglas de puntuación SOLO</h3><p class="muted">Kills: 2 puntos por eliminación, hasta la kill 10.</p><p class="muted">Posición: Top 25=1, 24=2, 23=3, 22=4, 21=5, 20=6, 19=7, 18=8, 17=10, 16=11, 15=14, 14=16, 13=18, 12=20, 11=22, 10=24, 9=28, 8=32, 7=36, 6=40, 5=45, 4=50, 3=55, 2=60, 1=65.</p><p class="muted">DUO y SQUAD quedan con puntos manuales hasta que confirmes sus reglas.</p></div>
 </section>
@@ -358,7 +372,7 @@ button,.tab{min-height:42px}
 <script>
 (function(){
 const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sb=null,user=null,profile=null,isAdmin=false,players=[],tournaments=[],results=[],registrations=[],teams=[],registrationCounts={},teamResults=[],myTeamIds=[],teamInvites=[],notifications=[];
+let sb=null,user=null,profile=null,isAdmin=false,players=[],tournaments=[],results=[],registrations=[],teams=[],registrationCounts={},teamResults=[],playerBans=[],myTeamIds=[],teamInvites=[],notifications=[];
 function msg(id,text,error=false){const el=$(id);el.className=error?'status error':'status';el.textContent=text}
 function nav(view){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==view));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===view));if(view==='jugadores'||view==='clasificacion'||view==='torneos'||view==='admin'||view==='notificaciones')refresh();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.view)));
@@ -375,7 +389,7 @@ async function refresh(){
  const [pr,tr]=await Promise.all([sb.from('profiles').select('id,nickname,game_uid,mode,team_name,status,role,avatar_url,created_at').order('created_at',{ascending:false}),sb.from('tournaments').select('*').order('created_at',{ascending:false})]);
  if(pr.error)console.warn(pr.error);else players=pr.data||[];
  if(tr.error)console.warn(tr.error);else tournaments=tr.data||[];
- const [rr,counts]=await Promise.all([sb.from('match_results').select('id,tournament_id,player_id,team_id,placement,kills,points,created_at'),sb.rpc('get_tournament_registration_counts')]);if(!rr.error)results=rr.data||[];if(!counts.error)registrationCounts=Object.fromEntries((counts.data||[]).map(x=>[x.tournament_id,Number(x.registered)]));const trr=await sb.from('team_results').select('id,tournament_id,team_id,placement,kills,points,created_at');if(!trr.error)teamResults=trr.data||[];const tm=await sb.from('scrim_teams').select('id,name,mode,captain_id,tournament_id');if(!tm.error)teams=tm.data||[];if(user){const nq=await sb.from('notifications').select('id,title,message,kind,link,created_at,read_at').order('created_at',{ascending:false}).limit(60);if(!nq.error)notifications=nq.data||[];const [rg,mt]=await Promise.all([sb.from('tournament_registrations').select('id,tournament_id,player_id,team_id,status,created_at').order('created_at',{ascending:false}),sb.from('scrim_team_members').select('team_id').eq('player_id',user.id)]);if(!rg.error)registrations=rg.data||[];myTeamIds=(mt.data||[]).map(x=>x.team_id);const iv=await sb.from('scrim_team_invites').select('id,team_id,status,created_at').eq('status','Pendiente').order('created_at',{ascending:false});if(!iv.error)teamInvites=iv.data||[];}else{registrations=[];myTeamIds=[];teamInvites=[];notifications=[];}
+ const [rr,counts]=await Promise.all([sb.from('match_results').select('id,tournament_id,player_id,team_id,placement,kills,points,created_at'),sb.rpc('get_tournament_registration_counts')]);if(!rr.error)results=rr.data||[];if(!counts.error)registrationCounts=Object.fromEntries((counts.data||[]).map(x=>[x.tournament_id,Number(x.registered)]));const trr=await sb.from('team_results').select('id,tournament_id,team_id,placement,kills,points,created_at');if(!trr.error)teamResults=trr.data||[];if(isAdmin){const bans=await sb.from('scrims_player_bans').select('*').order('banned_at',{ascending:false});if(!bans.error)playerBans=bans.data||[];}else playerBans=[];const tm=await sb.from('scrim_teams').select('id,name,mode,captain_id,tournament_id');if(!tm.error)teams=tm.data||[];if(user){const nq=await sb.from('notifications').select('id,title,message,kind,link,created_at,read_at').order('created_at',{ascending:false}).limit(60);if(!nq.error)notifications=nq.data||[];const [rg,mt]=await Promise.all([sb.from('tournament_registrations').select('id,tournament_id,player_id,team_id,status,created_at').order('created_at',{ascending:false}),sb.from('scrim_team_members').select('team_id').eq('player_id',user.id)]);if(!rg.error)registrations=rg.data||[];myTeamIds=(mt.data||[]).map(x=>x.team_id);const iv=await sb.from('scrim_team_invites').select('id,team_id,status,created_at').eq('status','Pendiente').order('created_at',{ascending:false});if(!iv.error)teamInvites=iv.data||[];}else{registrations=[];myTeamIds=[];teamInvites=[];notifications=[];}
  const approved=players.filter(p=>p.status==='Aprobado');
  $('countPlayers').textContent=approved.length;$('countTournaments').textContent=tournaments.filter(t=>t.status!=='Borrador').length;$('countResults').textContent=results.length;
  $('homeTournaments').innerHTML=table(tournaments.filter(t=>t.status!=='Borrador').slice(0,5).map(t=>'<tr><td><b>'+esc(t.name)+'</b></td><td>'+t.mode+'</td><td>'+esc(t.status)+'</td></tr>'),['Torneo','Modo','Estado']);
@@ -496,6 +510,7 @@ function renderAdminRegistrations(){
 }
 function renderAdmin(){
  renderAdminManagement();
+ renderPlayerBans();
  $('trTournament').innerHTML=tournaments.filter(t=>t.status!=='Borrador'&&t.mode!=='SOLO').map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
  $('trTeam').innerHTML=teams.map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
  const pending=players.filter(p=>p.status==='Pendiente');
@@ -504,6 +519,16 @@ function renderAdmin(){
  document.querySelectorAll('[data-reject]').forEach(b=>b.onclick=()=>changeStatus(b.dataset.reject,'Rechazado'));
  $('rTournament').innerHTML=tournaments.filter(t=>t.status!=='Borrador').map(t=>'<option value="'+t.id+'">'+esc(t.name)+' · '+t.mode+'</option>').join('');
  $('rPlayer').innerHTML=players.filter(p=>p.status==='Aprobado').map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · '+p.mode+'</option>').join(''); $('exportResultsBtn').onclick=()=>{const rows=[['torneo','modalidad','participante','posicion','kills','puntos'],...results.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,'SOLO',players.find(p=>p.id===r.player_id)?.nickname,r.placement,r.kills,r.points]),...teamResults.map(r=>[tournaments.find(t=>t.id===r.tournament_id)?.name,teams.find(t=>t.id===r.team_id)?.mode,teams.find(t=>t.id===r.team_id)?.name,r.placement,r.kills,r.points])];const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='scrims-rtg-resultados.csv';a.click();URL.revokeObjectURL(a.href)};
+}
+function renderPlayerBans(){
+ const select=$('banPlayerSelect');
+ const candidates=players.filter(p=>p.role!=='admin');
+ select.innerHTML='<option value="">Selecciona un jugador</option>'+candidates.map(p=>'<option value="'+p.id+'">'+esc(p.nickname)+' · UID '+esc(p.game_uid)+' · '+p.mode+'</option>').join('');
+ const active=playerBans.filter(b=>!b.lifted_at&&(!b.expires_at||new Date(b.expires_at)>new Date()));
+ const row=b=>{const p=players.find(x=>x.id===b.player_id),admin=players.find(x=>x.id===b.banned_by);return '<tr><td><b>'+esc(p?.nickname||'Jugador')+'</b><br><small>UID: '+esc(p?.game_uid||'—')+'</small></td><td>'+esc(b.reason)+'</td><td>'+(b.expires_at?new Date(b.expires_at).toLocaleString('es-BO'):'Permanente')+'</td><td>'+(b.evidence_url?'<a href="'+esc(b.evidence_url)+'" target="_blank" rel="noopener noreferrer">Ver evidencia ↗</a>':'—')+'</td><td>'+esc(admin?.nickname||'Administrador')+'</td><td>'+(b.lifted_at?'Levantado '+new Date(b.lifted_at).toLocaleString('es-BO'):'<button type="button" class="small danger" data-lift-ban="'+b.id+'">Levantar baneo</button>')+'</td></tr>'};
+ $('activePlayerBans').innerHTML=active.length?table(active.map(row),['Jugador','Motivo','Finaliza','Evidencia','Aplicado por','Acción']):'<div class="empty">No hay baneos activos.</div>';
+ $('playerBanHistory').innerHTML=playerBans.length?table(playerBans.map(row),['Jugador','Motivo','Finaliza','Evidencia','Aplicado por','Estado']):'<div class="empty">Todavía no hay sanciones registradas.</div>';
+ document.querySelectorAll('[data-lift-ban]').forEach(b=>b.onclick=async()=>{const note=prompt('Motivo para levantar el baneo (opcional):')??null;if(note===null)return;const {error}=await sb.rpc('admin_lift_player_ban',{target_ban:b.dataset.liftBan,note});if(error){msg('playerBanStatus',error.message,true);return}msg('playerBanStatus','Baneo levantado correctamente.');await refresh()});
 }
 function renderAdminManagement(){
  const candidates=players.filter(p=>p.status==='Aprobado'&&p.role!=='admin');
@@ -520,6 +545,26 @@ function renderAdminManagement(){
   await refresh();
  });
 }
+$('banDuration').addEventListener('change',()=>{$('banExpiryLabel').classList.toggle('hidden',$('banDuration').value!=='temporary');$('banExpiresAt').required=$('banDuration').value==='temporary'});
+$('playerBanForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(!isAdmin){msg('playerBanStatus','Acceso denegado: solo administradores.',true);return}
+ const playerId=$('banPlayerSelect').value,reason=$('banReason').value.trim(),evidence=$('banEvidence').value.trim();
+ const expires=$('banDuration').value==='temporary'?$ ('banExpiresAt').value:'';
+ if(!playerId){msg('playerBanStatus','Selecciona un jugador.',true);return}
+ if(reason.length<5){msg('playerBanStatus','Describe el motivo con al menos 5 caracteres.',true);return}
+ if($('banDuration').value==='temporary'&&!expires){msg('playerBanStatus','Indica la fecha y hora de finalización.',true);return}
+ const target=players.find(p=>p.id===playerId);
+ if(!target||target.role==='admin'){msg('playerBanStatus','No puedes sancionar una cuenta administrativa.',true);return}
+ if(!confirm('¿Aplicar baneo a '+target.nickname+'? Se cancelarán sus inscripciones activas y las de sus equipos.'))return;
+ const btn=e.submitter;if(btn)btn.disabled=true;
+ const {error}=await sb.rpc('admin_ban_player',{target_player:playerId,ban_reason:reason,evidence_url:evidence||null,ban_expires_at:expires?new Date(expires).toISOString():null});
+ if(btn)btn.disabled=false;
+ if(error){msg('playerBanStatus',error.message,true);return}
+ e.target.reset();$('banExpiryLabel').classList.add('hidden');$('banExpiresAt').required=false;
+ msg('playerBanStatus','Baneo aplicado correctamente. El jugador ya no puede participar en torneos.');
+ await refresh();
+});
 $('grantAdminBtn').addEventListener('click',async()=>{
  const id=$('adminCandidate').value;
  if(!id){$('adminManagementMsg').textContent='Selecciona un jugador aprobado.';return}
