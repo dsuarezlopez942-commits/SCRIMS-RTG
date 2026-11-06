@@ -1,4 +1,4 @@
-const CACHE_NAME = 'scrims-rtg-shell-v1';
+const CACHE_NAME = 'scrims-rtg-shell-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
