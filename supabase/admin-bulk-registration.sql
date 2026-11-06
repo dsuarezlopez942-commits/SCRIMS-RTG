@@ -44,19 +44,33 @@ begin
   available_slots := greatest(coalesce(t.max_slots,100) - used_slots, 0);
 
   if t.mode = 'SOLO' then
+    -- Reactiva filas canceladas existentes antes de insertar nuevas,
+    -- respetando los cupos y el índice único histórico.
+    with to_reactivate as (
+      select r.id
+      from public.tournament_registrations r
+      join public.profiles p on p.id = r.player_id
+      where r.tournament_id = t.id
+        and r.status = 'Cancelado'
+        and p.status = 'Aprobado'
+        and not public.is_player_banned(p.id)
+      order by r.created_at, p.nickname
+      limit available_slots
+    ), reactivated as (
+      update public.tournament_registrations r
+      set status = 'Inscrito'
+      from to_reactivate x
+      where r.id = x.id
+      returning r.id
+    )
+    select count(*) into inserted_count from reactivated;
+
     select count(*) into eligible_count
     from public.profiles p
     where p.status = 'Aprobado'
-      and not public.is_player_banned(p.id)
-      and not exists (
-        select 1 from public.tournament_registrations r
-        where r.tournament_id = t.id and r.player_id = p.id
-      )
-      and not exists (
-        select 1 from public.scrim_team_members m where m.player_id = p.id
-      );
+      and not public.is_player_banned(p.id);
 
-    if available_slots > 0 then
+    if available_slots > inserted_count then
       insert into public.tournament_registrations(tournament_id, player_id)
       select t.id, p.id
       from public.profiles p
@@ -66,15 +80,13 @@ begin
           select 1 from public.tournament_registrations r
           where r.tournament_id = t.id and r.player_id = p.id
         )
-        and not exists (
-          select 1 from public.scrim_team_members m where m.player_id = p.id
-        )
       order by p.created_at, p.nickname
-      limit available_slots
+      limit (available_slots - inserted_count)
       on conflict (tournament_id, player_id)
       where player_id is not null
       do nothing;
-      get diagnostics inserted_count = row_count;
+      get diagnostics team_no = row_count;
+      inserted_count := inserted_count + team_no;
     end if;
 
     return jsonb_build_object(
@@ -100,7 +112,10 @@ begin
         and r.player_id = p.id
     )
     and not exists (
-      select 1 from public.scrim_team_members m where m.player_id = p.id
+      select 1
+      from public.scrim_team_members m
+      join public.scrim_teams st on st.id = m.team_id
+      where m.player_id = p.id and st.tournament_id = t.id
     )
     and not exists (
       select 1 from public.tournament_registrations r
