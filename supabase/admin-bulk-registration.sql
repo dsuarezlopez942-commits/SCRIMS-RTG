@@ -50,7 +50,10 @@ begin
       and not public.is_player_banned(p.id)
       and not exists (
         select 1 from public.tournament_registrations r
-        where r.tournament_id = t.id and r.player_id = p.id and r.status <> 'Cancelado'
+        where r.tournament_id = t.id and r.player_id = p.id
+      )
+      and not exists (
+        select 1 from public.scrim_team_members m where m.player_id = p.id
       );
 
     if available_slots > 0 then
@@ -61,7 +64,10 @@ begin
         and not public.is_player_banned(p.id)
         and not exists (
           select 1 from public.tournament_registrations r
-          where r.tournament_id = t.id and r.player_id = p.id and r.status <> 'Cancelado'
+          where r.tournament_id = t.id and r.player_id = p.id
+        )
+        and not exists (
+          select 1 from public.scrim_team_members m where m.player_id = p.id
         )
       order by p.created_at, p.nickname
       limit available_slots;
@@ -91,10 +97,11 @@ begin
         and r.player_id = p.id
     )
     and not exists (
-      select 1
-      from public.scrim_team_members m
-      join public.scrim_teams st on st.id = m.team_id
-      where m.player_id = p.id and st.tournament_id = t.id
+      select 1 from public.scrim_team_members m where m.player_id = p.id
+    )
+    and not exists (
+      select 1 from public.tournament_registrations r
+      where r.tournament_id = t.id and r.player_id = p.id
     );
 
   eligible_count := cardinality(candidate_ids);
