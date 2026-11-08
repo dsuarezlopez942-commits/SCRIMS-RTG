@@ -614,6 +614,33 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
  .tournament-actions button{flex-basis:100%}
 }
 
+
+/* SCRIMS RTG · LEADERBOARD FINAL POLISH */
+#clasificacion>.card{background:radial-gradient(ellipse at 50% 0%,#15558a22,transparent 42%),linear-gradient(145deg,#142238,#0c1623)}
+#clasificacion #rankMode{min-width:160px;font-weight:800;cursor:pointer}
+#rankingPodium .podium-card.first:after{content:"CAMPEÓN";position:absolute;top:12px;right:-28px;transform:rotate(35deg);padding:4px 34px;background:linear-gradient(90deg,#1678c8,#55a8ff);color:#fff;font-size:8px;font-weight:950;letter-spacing:1.5px;box-shadow:0 4px 14px #0005}
+#rankingPodium .podium-card.first .podium-points{background:linear-gradient(90deg,#fff,#8fd0ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+#rankingTable table{border-collapse:separate;border-spacing:0 5px;border:0;background:transparent}
+#rankingTable thead th{background:#14263b;border:0}
+#rankingTable thead th:first-child{border-radius:10px 0 0 10px}
+#rankingTable thead th:last-child{border-radius:0 10px 10px 0}
+#rankingTable tbody tr{background:#111f30;transition:background .2s,transform .2s}
+#rankingTable tbody tr td{border-top:1px solid #263e58;border-bottom:1px solid #263e58}
+#rankingTable tbody tr td:first-child{border-left:1px solid #263e58;border-radius:10px 0 0 10px}
+#rankingTable tbody tr td:last-child{border-right:1px solid #263e58;border-radius:0 10px 10px 0}
+#rankingTable tbody tr:nth-child(1){background:linear-gradient(90deg,#17436a,#12243a)}
+#rankingTable tbody tr:nth-child(2){background:#18283a}
+#rankingTable tbody tr:nth-child(3){background:#1a2938}
+#rankingTable tbody tr:hover{background:#1a3652;transform:translateX(2px)}
+#rankingTable tbody tr:nth-child(1) .rank-number{background:linear-gradient(135deg,#258de0,#12538e);border-color:#6dc1ff}
+#rankingTable tbody tr:nth-child(2) .rank-number{background:#34475c;color:#e5eff9}
+#rankingTable tbody tr:nth-child(3) .rank-number{background:#49372d;color:#ffcfaa;border-color:#805c43}
+#rankingTable td{vertical-align:middle}
+#publishedWinnerPosts{margin-top:26px;padding-top:22px}
+#publishedWinnerPosts>h3{font-size:18px;color:#dceeff}
+#publishedWinnerPosts .tournament-card table{min-width:0}
+@media(max-width:520px){#rankingTable table{min-width:540px}#rankingPodium .podium-card.first:after{font-size:7px;right:-31px;top:10px}}
+
 </style>
 </head>
 <body>
