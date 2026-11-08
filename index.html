@@ -363,6 +363,109 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
  body:before{animation:none!important}
 }
 
+
+/* =========================================================
+   SCRIMS RTG · INTERNAL COMPETITIVE UI
+   Visual-only enhancement for dynamic sections and admin.
+   ========================================================= */
+.view{animation:rtgFadeUp .42s cubic-bezier(.2,.7,.2,1) both}
+.view>.card{position:relative}
+.view>.card:before{
+ content:"";position:absolute;left:22px;right:22px;top:0;height:1px;
+ background:linear-gradient(90deg,transparent,#55a8ff88,transparent);
+ opacity:.7;pointer-events:none
+}
+.view .card h3{letter-spacing:.01em}
+.admin-list{
+ margin-top:22px;padding-top:20px;border-top:1px solid #26384d
+}
+.admin-list>h3{color:#cfe7ff}
+.player-directory,.tournament-grid,#rankingTable,#rankingPodium,
+#notificationsList,#myRegistrations,#teamInvites,#tournamentHistory,
+#publishedWinnerPosts,#playerProfile{
+ animation:rtgFadeUp .4s ease both
+}
+.player-directory,.tournament-grid{display:grid;gap:14px}
+.player-directory{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.tournament-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.player-directory>*,.tournament-grid>*{
+ min-width:0;border:1px solid #2a405a!important;border-radius:14px!important;
+ background:linear-gradient(145deg,#17263a,#0d1725)!important;
+ box-shadow:0 12px 30px #0003;transition:transform .25s,border-color .25s,box-shadow .25s
+}
+.player-directory>*:hover,.tournament-grid>*:hover{
+ transform:translateY(-3px);border-color:#55a8ff!important;
+ box-shadow:0 16px 34px #0005,0 0 20px #147ce522
+}
+.profile-panel{
+ margin-top:16px;padding:20px;border:1px solid #397db8;border-radius:14px;
+ background:linear-gradient(145deg,#142a42,#0d1725);box-shadow:0 12px 32px #0004
+}
+#rankingTable table,#playersTable table,#tournamentsTable table{
+ border-collapse:separate;border-spacing:0;width:100%;overflow:hidden;
+ border:1px solid #26384d;border-radius:13px;background:#0d1724
+}
+#rankingTable th,#playersTable th,#tournamentsTable th{
+ background:#14263b;color:#8bc8ff;padding:14px 12px
+}
+#rankingTable td,#playersTable td,#tournamentsTable td{padding:13px 12px}
+#rankingTable tbody tr:nth-child(1){background:#15304a55}
+#rankingTable tbody tr:hover,#playersTable tbody tr:hover,#tournamentsTable tbody tr:hover{
+ background:#55a8ff12
+}
+.rank-podium{gap:16px;margin:22px 0 28px}
+.podium-card{backdrop-filter:blur(8px);box-shadow:0 14px 34px #0005}
+.podium-card.first{box-shadow:0 0 32px #55a8ff20,0 16px 38px #0005}
+.podium-medal{filter:drop-shadow(0 0 10px #55a8ff33)}
+#publishedWinnerPosts>*,#notificationsList>*,#myRegistrations>*,
+#teamInvites>*,#tournamentHistory>*{
+ border:1px solid #263d56;border-radius:12px;background:linear-gradient(145deg,#142237,#0d1724);
+ padding:14px;margin:10px 0
+}
+.admin-workspace{display:grid;gap:18px}
+.admin-subnav{
+ width:100%;max-width:100%;overflow-x:auto;flex-wrap:nowrap;
+ background:#0b1522;border-color:#2a405a;scrollbar-width:thin
+}
+.admin-subnav .admin-subtab{white-space:nowrap;flex:0 0 auto}
+.admin-subnav .admin-subtab.active{
+ background:linear-gradient(135deg,#145da5,#123b67);
+ border-color:#398fdf;color:#fff;box-shadow:0 0 18px #147ce533
+}
+.admin-workspace .admin-part,.admin-workspace [data-admin-section]{
+ border:1px solid #263d56;border-radius:14px;padding:18px;
+ background:linear-gradient(145deg,#132136,#0d1724)
+}
+.admin-workspace h3,.admin-workspace h4{color:#dceeff}
+.admin-workspace .actions{gap:9px}
+.admin-workspace button{border-color:#304965}
+.admin-workspace button.primary{border-color:#3d9af0}
+.admin-workspace input,.admin-workspace select,.admin-workspace textarea{
+ background:#091421;border-color:#30445d
+}
+#adminGate{
+ padding:18px;border:1px dashed #397db8;border-radius:12px;
+ background:#102137;color:#c8e5ff
+}
+#notificationBadge:not(:empty){
+ display:inline-flex;align-items:center;justify-content:center;
+ min-width:19px;height:19px;padding:0 5px;margin-left:5px;
+ border-radius:99px;background:#147ce5;color:#fff;font-size:10px;font-weight:900
+}
+.empty{
+ border:1px dashed #304965;border-radius:12px;background:#0d1826;
+ padding:24px;color:#9fb1c5
+}
+@media(max-width:700px){
+ .player-directory{grid-template-columns:1fr}
+ .tournament-grid{grid-template-columns:1fr}
+ .rank-podium{gap:7px}
+ .podium-card{padding:15px 7px 13px}
+ .podium-name{font-size:13px}
+ .admin-workspace .admin-part,.admin-workspace [data-admin-section]{padding:13px}
+ .view>.card:before{left:14px;right:14px}
+}
+
 </style>
 </head>
 <body>
