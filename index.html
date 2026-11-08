@@ -493,6 +493,127 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
  .player-card .player-avatar{width:44px;height:44px;flex-basis:44px}
 }
 
+
+/* =========================================================
+   SCRIMS RTG · TOURNAMENTS + LEADERBOARD + WINNERS FINISH
+   CSS-only polish. No data, markup generation or app logic changed.
+   ========================================================= */
+#torneos>.card,#clasificacion>.card{overflow:hidden}
+#torneos>.card>h3,#clasificacion>.card>h3{
+ font-size:clamp(19px,2vw,23px);letter-spacing:-.35px;
+ color:#f1f7ff;margin-bottom:10px
+}
+#torneos>.card>p,#clasificacion>.card>p{color:#9eb2c9}
+.tournament-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:17px}
+.tournament-card{
+ position:relative;isolation:isolate;overflow:hidden;
+ padding:21px!important;margin:0!important;
+ border:1px solid #2c4968!important;border-radius:16px!important;
+ background:linear-gradient(145deg,#172b42 0%,#101d2e 58%,#0c1623 100%)!important;
+ box-shadow:0 14px 36px #0004, inset 0 1px #ffffff09!important;
+ transition:transform .28s,border-color .28s,box-shadow .28s!important
+}
+.tournament-card:before{
+ content:"";position:absolute;z-index:-1;top:-90px;right:-70px;
+ width:190px;height:190px;border-radius:50%;
+ background:radial-gradient(circle,#147ce52b,transparent 70%);
+ pointer-events:none
+}
+.tournament-card:hover{
+ transform:translateY(-5px)!important;border-color:#55a8ff!important;
+ box-shadow:0 20px 42px #0006,0 0 26px #147ce526!important
+}
+.tournament-card h4{font-size:19px!important;line-height:1.3;color:#f1f7ff;margin:10px 0!important}
+.tournament-card h3{color:#f1f7ff;line-height:1.3}
+.tournament-meta{gap:8px!important;margin:13px 0!important}
+.tournament-meta span,.tournament-card>.pill{
+ display:inline-flex;align-items:center;gap:5px;
+ padding:6px 9px;border-radius:8px;
+ background:#0a1a2b;border:1px solid #294a6b;color:#c6e4ff;
+ font-size:11px;font-weight:750
+}
+.tournament-card .registration-note{color:#9eb2c9;line-height:1.6}
+.tournament-actions{display:flex!important;flex-wrap:wrap;gap:9px!important;margin-top:17px!important}
+.tournament-actions button{flex:1 1 135px;min-height:40px}
+.tournament-card img{box-shadow:0 10px 28px #0005}
+#myRegistrations,#teamInvites,#tournamentHistory{
+ display:grid;gap:10px
+}
+#myRegistrations .tournament-card,#teamInvites .tournament-card,
+#tournamentHistory .tournament-card{margin:0!important}
+#rankMode{
+ background:#0b1725;border:1px solid #355574;color:#e7f3ff;
+ border-radius:10px;padding:11px 13px
+}
+#clasificacion label{color:#bcd8f2}
+#rankingPodium{
+ grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;
+ gap:15px;margin:25px 0 30px
+}
+#rankingPodium .podium-card{
+ position:relative;overflow:hidden;isolation:isolate;
+ border-radius:17px;padding:22px 14px!important;
+ background:linear-gradient(155deg,#172a40,#0d1725)!important;
+ border:1px solid #34516f!important;
+ box-shadow:0 16px 36px #0005!important;
+ transition:transform .28s,border-color .28s,box-shadow .28s
+}
+#rankingPodium .podium-card:before{
+ content:"";position:absolute;z-index:-1;inset:0;opacity:.65;
+ background:radial-gradient(ellipse at 50% 0%,#55a8ff22,transparent 68%);
+ pointer-events:none
+}
+#rankingPodium .podium-card:hover{transform:translateY(-5px);border-color:#72baff!important}
+#rankingPodium .podium-card.first{
+ min-height:230px;border-color:#65baff!important;
+ background:linear-gradient(155deg,#194b75,#10243a 72%)!important;
+ box-shadow:0 0 35px #147ce533,0 18px 42px #0006!important
+}
+#rankingPodium .podium-card.second{min-height:195px;border-color:#819bb5!important}
+#rankingPodium .podium-card.third{min-height:180px;border-color:#936f57!important}
+#rankingPodium .podium-medal{font-size:35px;margin-bottom:10px;filter:drop-shadow(0 0 12px #55a8ff55)}
+#rankingPodium .podium-place{font-size:10px;letter-spacing:2px;color:#9ed2ff}
+#rankingPodium .podium-name{font-size:clamp(13px,1.5vw,18px);font-weight:900;overflow-wrap:anywhere;margin:9px 0}
+#rankingPodium .podium-points{font-size:clamp(27px,3vw,38px);font-weight:950;line-height:1.1;color:#fff;text-shadow:0 0 22px #55a8ff55}
+#rankingPodium .podium-meta{font-size:10px;letter-spacing:1px;color:#a9bfd5;margin-top:8px}
+#rankingTable{overflow-x:auto;border-radius:13px}
+#rankingTable table{min-width:570px}
+#rankingTable th:first-child,#rankingTable td:first-child{width:90px}
+#rankingTable .rank-number{
+ display:inline-grid;place-items:center;min-width:30px;height:30px;
+ border-radius:9px;background:#142d47;border:1px solid #315b83;
+ color:#a9d7ff;font-weight:900
+}
+#rankingTable tbody tr:nth-child(1) .rank-number{
+ background:linear-gradient(135deg,#1b75bd,#16436e);color:white;border-color:#62b7ff
+}
+#rankingTable .rank-player{display:block;font-weight:850;color:#eff7ff}
+#rankingTable .rank-sub{display:block;font-size:11px;color:#91a9c2;margin-top:2px}
+#rankingTable td:nth-child(3) b{color:#79bdff;font-size:16px}
+#publishedWinnerPosts{display:grid;gap:13px}
+#publishedWinnerPosts>.tournament-card{
+ border-color:#3b5f80!important;
+ background:linear-gradient(145deg,#172c43,#0d1826)!important
+}
+#publishedWinnerPosts .pill.ok{
+ background:#123b38;border-color:#277a70;color:#9ef0d9
+}
+#publishedWinnerPosts h4{color:#9ed2ff}
+#publishedWinnerPosts table{border-radius:10px;overflow:hidden}
+#publishedWinnerPosts th{background:#142b42}
+@media(max-width:700px){
+ #rankingPodium{gap:7px;margin:18px 0 22px}
+ #rankingPodium .podium-card{padding:16px 7px!important;min-height:145px}
+ #rankingPodium .podium-card.first{min-height:175px}
+ #rankingPodium .podium-card.second{min-height:155px}
+ #rankingPodium .podium-card.third{min-height:145px}
+ #rankingPodium .podium-medal{font-size:26px}
+ #rankingPodium .podium-place{font-size:8px;letter-spacing:1px}
+ #rankingPodium .podium-meta{font-size:8px;letter-spacing:.4px}
+ .tournament-card{padding:16px!important}
+ .tournament-actions button{flex-basis:100%}
+}
+
 </style>
 </head>
 <body>
