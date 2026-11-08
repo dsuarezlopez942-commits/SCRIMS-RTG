@@ -701,7 +701,8 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
 .team-invite-tools{display:flex;align-items:end;gap:10px;margin-top:14px}.team-invite-tools label{flex:1}
 .team-player-results{display:grid;gap:8px;margin-top:10px}.team-player-result{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border:1px solid #29435e;border-radius:9px;background:#0c1a29}
 @media(max-width:700px){.team-create-grid,.team-hub-columns{grid-template-columns:1fr}.team-invite-tools{align-items:stretch;flex-direction:column}.team-member{flex-direction:column;gap:3px}.team-hub-item-head{align-items:flex-start;flex-direction:column}}
-\n</style>
+
+</style>
 </head>
 <body>
 <header><div class="wrap top"><div class="brand"><img class="logo" src="logo-rtg.png" alt="Logo SCRIMS RTG"><div><h1>SCRIMS RTG</h1><small>CUBEX POINTS MANAGER</small></div></div><div class="header-actions"><div class="language-switch" role="group" aria-label="Language"><button type="button" id="langES" class="active" aria-pressed="true">ES</button><button type="button" id="langEN" aria-pressed="false">EN</button></div><button type="button" id="openTutorial" class="tutorial-launch">📘 <span data-tutorial-label>VER TUTORIAL</span></button><span class="pill">CREATIVE DESTRUCTION</span></div></div></header>
@@ -717,7 +718,8 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
   <div class="tutorial-actions"><button type="button" id="skipTutorial" class="small">Skip tutorial</button><div class="right"><button type="button" id="prevTutorial" class="small">Back</button><button type="button" id="nextTutorial" class="primary">Next</button></div></div>
  </section>
 </div>
-\n<main>
+
+<main>
 <section class="hero"><img class="hero-banner" src="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png" alt="Banner de SCRIMS RTG con personaje de Creative Destruction"><div class="eyebrow">COMPETITIVE ARENA</div><h2>DOMINA LA <span>CLASIFICACIÓN.</span></h2><p>Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.</p></section>
 <div class="card" id="connectionCard"><b>Conectando con SCRIMS RTG…</b><div class="muted" id="connectionText">Comprobando conexión segura con la base de datos.</div></div>
 <nav id="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="cuenta">Registro / Acceso</button><button class="tab" data-view="jugadores">Jugadores</button><button class="tab" data-view="torneos">Torneos</button><button class="tab" data-view="equipos">Equipos</button><button class="tab" data-view="clasificacion">Clasificación</button><button class="tab" data-view="notificaciones">Notificaciones <span id="notificationBadge"></span></button><button class="tab hidden" id="adminTab" data-view="admin">Administrador</button></nav>
@@ -937,7 +939,8 @@ document.addEventListener('click',async e=>{
  const respond=e.target.closest('[data-respond-team-invite]');
  if(respond){const {error}=await sb.rpc('respond_standalone_team_invite',{target_invite:respond.dataset.respondTeamInvite,accept_invite:respond.dataset.accept==='true'});if(error){alert(error.message);return}alert(respond.dataset.accept==='true'?'¡Ya formas parte del equipo!':'Invitación rechazada.');await refresh();}
 });
-\nfunction renderTournamentHistory(){
+
+function renderTournamentHistory(){
  const rows=[...results.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),p=players.find(x=>x.id===r.player_id);return {date:r.created_at,name:t?.name||'Torneo',mode:t?.mode||'',participant:p?.nickname||'Jugador',place:r.placement,kills:r.kills,points:r.points}}),...teamResults.map(r=>{const t=tournaments.find(x=>x.id===r.tournament_id),team=teams.find(x=>x.id===r.team_id);return {date:r.created_at,name:t?.name||'Torneo',mode:t?.mode||'',participant:team?.name||'Equipo',place:r.placement,kills:r.kills,points:r.points}})].sort((a,b)=>new Date(b.date)-new Date(a.date));
  return table(rows.slice(0,50).map(r=>'<tr><td>'+esc(r.name)+'</td><td>'+r.mode+'</td><td>'+esc(r.participant)+'</td><td>#'+r.place+'</td><td>'+r.kills+'</td><td><b>'+r.points+'</b></td></tr>'),['Torneo','Modo','Jugador / Equipo','Posición','Kills','Puntos']);
 }
