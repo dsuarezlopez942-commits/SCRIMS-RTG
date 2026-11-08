@@ -30,8 +30,8 @@ create policy "Admins update guild applications" on public.guild_applications fo
 using (exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'))
 with check (exists(select 1 from public.profiles p where p.id=auth.uid() and p.role='admin'));
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
-values ('guild-applications','guild-applications',false,31457280,array['image/jpeg','image/png','image/webp','video/mp4','video/webm','video/quicktime'])
-on conflict (id) do update set public=false,file_size_limit=31457280,allowed_mime_types=excluded.allowed_mime_types;
+values ('guild-applications','guild-applications',false,104857600,array['image/jpeg','image/png','image/webp','video/mp4','video/webm','video/quicktime'])
+on conflict (id) do update set public=false,file_size_limit=104857600,allowed_mime_types=excluded.allowed_mime_types;
 drop policy if exists "Applicants upload own guild media" on storage.objects;
 create policy "Applicants upload own guild media" on storage.objects for insert to authenticated
 with check (bucket_id='guild-applications' and (storage.foldername(name))[1]=auth.uid()::text);
