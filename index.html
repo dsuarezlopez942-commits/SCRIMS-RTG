@@ -846,7 +846,7 @@ async function refresh(){
  const podiumClasses=['second','first','third'],medals=['🥈','👑','🥉'],places=['2.º LUGAR','1.º LUGAR','3.º LUGAR'];
  $('rankingPodium').innerHTML=podium.length?podiumOrder.map((p,i)=>p?'<div class="podium-card '+podiumClasses[i]+'"><div class="podium-medal">'+medals[i]+'</div><div class="podium-place">'+places[i]+'</div><div class="podium-name">'+esc(p.nickname)+'</div><div class="podium-points">'+p.points+'</div><div class="podium-meta">PUNTOS · '+p.kills+' KILLS</div></div>':'<div class="podium-card '+podiumClasses[i]+'"><div class="podium-medal">—</div><div class="podium-place">'+places[i]+'</div><div class="podium-name">Por definir</div><div class="podium-meta">Sin resultados</div></div>').join(''):'<div class="empty" style="grid-column:1/-1">El podio aparecerá cuando se registren resultados.</div>';
  $('rankingTable').innerHTML=table(rank.map((p,i)=>'<tr><td><span class="rank-number">'+(i+1)+'</span></td><td><span class="rank-player">'+esc(p.nickname)+'</span><span class="rank-sub">'+esc(p.team_name||p.mode)+'</span></td><td><b>'+p.points+'</b></td><td>'+p.kills+'</td><td>'+p.matches+'</td></tr>'),['Posición','Jugador / Equipo','Puntos','Kills','Partidas']);
- renderWinnerPosts();renderNotifications();if(isAdmin)renderAdmin();
+ renderWinnerPosts();renderNotifications();renderTeamHub();if(isAdmin)renderAdmin();
 }
 async function uploadPlayerAvatar(file,playerId){
  if(!file)return;
@@ -885,7 +885,7 @@ function renderNotifications(){
  $('notificationBadge').textContent=unread?'('+unread+')':'';
  $('notificationsList').innerHTML=!user?'<div class="empty">Inicia sesión para ver tus notificaciones.</div>':!notifications.length?'<div class="empty">Todavía no tienes notificaciones.</div>':notifications.map(n=>'<article class="tournament-card" style="margin-bottom:10px;opacity:'+(n.read_at?'.68':'1')+'"><div class="actions" style="justify-content:space-between"><b>'+esc(n.title)+'</b><span class="pill '+(n.read_at?'':'ok')+'">'+(n.read_at?'Leída':'Nueva')+'</span></div><p class="muted">'+esc(n.message)+'</p><div class="actions"><small class="muted">'+new Date(n.created_at).toLocaleString('es-BO')+'</small>'+(n.read_at?'':'<button class="small" data-read-notification="'+n.id+'">Marcar como leída</button>')+'<button class="small" data-open-notification="'+esc(n.link||'inicio')+'">Ver</button></div></article>').join('');
  document.querySelectorAll('[data-read-notification]').forEach(b=>b.onclick=async()=>{const {error}=await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('id',b.dataset.readNotification).eq('user_id',user.id);if(error)alert(error.message);else await refresh()});
- document.querySelectorAll('[data-open-notification]').forEach(b=>b.onclick=()=>nav(['inicio','cuenta','jugadores','torneos','clasificacion','admin'].includes(b.dataset.openNotification)?b.dataset.openNotification:'inicio'));
+ document.querySelectorAll('[data-open-notification]').forEach(b=>b.onclick=()=>nav(['inicio','cuenta','jugadores','torneos','equipos','clasificacion','admin'].includes(b.dataset.openNotification)?b.dataset.openNotification:'inicio'));
 }
 $('markAllNotifications').addEventListener('click',async()=>{if(!user)return;const {error}=await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',user.id).is('read_at',null);if(error)alert(error.message);else await refresh()});
 function renderTeamInvites(){
