@@ -838,12 +838,17 @@ function renderTournamentCards(){
  document.querySelectorAll('[data-delete-tournament]').forEach(b=>b.onclick=async()=>{
   const t=tournaments.find(x=>x.id===b.dataset.deleteTournament);
   if(!t)return;
-  const typed=prompt('Vas a eliminar definitivamente el torneo: '+t.name+'\\nTambién se borrarán sus inscripciones, equipos e historial relacionado.\\n\\nEscribe ELIMINAR para confirmar:');
+  const typed=prompt('Vas a eliminar definitivamente el torneo: '+t.name+'\\nTambién se eliminarán sus inscripciones, equipos, historial y publicaciones oficiales de ganadores vinculadas a este torneo.\\n\\nEsta acción no se puede deshacer. Escribe ELIMINAR para confirmar:');
   if(typed!=='ELIMINAR')return;
   b.disabled=true;
+  const {error:winnerPostsError}=await sb.from('tournament_winner_posts').delete().eq('tournament_id',t.id);
+  if(winnerPostsError){
+   alert('No se pudieron eliminar las publicaciones de ganadores vinculadas al torneo. El torneo no fue eliminado. Detalle: '+winnerPostsError.message);
+   b.disabled=false;return;
+  }
   const {error}=await sb.from('tournaments').delete().eq('id',t.id);
   if(error){alert('No se pudo eliminar el torneo: '+error.message);b.disabled=false;return}
-  alert('Torneo eliminado correctamente.');
+  alert('Torneo y publicaciones oficiales vinculadas eliminados correctamente.');
   await refresh();
  });
 }
