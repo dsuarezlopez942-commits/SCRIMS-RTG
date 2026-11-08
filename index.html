@@ -801,7 +801,7 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
    <label>Redes sociales / Discord<input id="guildSocials" maxlength="300" placeholder="Enlaces o usuario"></label>
    <label class="full">Cuéntanos sobre ti y por qué quieres entrar a RTG<textarea id="guildMessage" rows="5" maxlength="2500" required placeholder="Háblanos de tu experiencia, habilidades, disponibilidad, objetivos y qué puedes aportar al gremio..."></textarea></label>
    <div class="full guild-files"><label>Imágenes de evidencia<input id="guildImages" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><small class="muted">JPG, PNG o WEBP · máximo 5 imágenes · 5 MB cada una.</small></div>
-   <div class="full guild-files"><label>Clips / vídeos de tus mejores jugadas<input id="guildVideos" type="file" accept="video/mp4,video/webm,video/quicktime" multiple></label><small class="muted">MP4, WEBM o MOV · máximo 3 vídeos · 30 MB cada uno.</small></div>
+   <div class="full guild-files"><label>Clips / vídeos de tus mejores jugadas<input id="guildVideos" type="file" accept="video/mp4,video/webm,video/quicktime" multiple></label><small class="muted">MP4, WEBM o MOV · máximo 3 vídeos · 100 MB cada uno.</small></div>
   </div>
   <button class="primary" type="submit" id="guildSubmitBtn">ENVIAR SOLICITUD A RTG</button><div id="guildApplicationMsg" aria-live="polite"></div>
  </form>
@@ -891,7 +891,7 @@ $('guildApplicationForm')?.addEventListener('submit',async e=>{
  const images=[...$('guildImages').files],videos=[...$('guildVideos').files];
  if(images.length>5||videos.length>3){msg('guildApplicationMsg','Máximo 5 imágenes y 3 vídeos.',true);return}
  if(images.some(f=>!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>5*1024*1024)){msg('guildApplicationMsg','Imagen inválida. Usa JPG, PNG o WEBP de hasta 5 MB.',true);return}
- if(videos.some(f=>!['video/mp4','video/webm','video/quicktime'].includes(f.type)||f.size>30*1024*1024)){msg('guildApplicationMsg','Vídeo inválido. Usa MP4, WEBM o MOV de hasta 30 MB.',true);return}
+ if(videos.some(f=>!['video/mp4','video/webm','video/quicktime'].includes(f.type)||f.size>100*1024*1024)){msg('guildApplicationMsg','Vídeo inválido. Usa MP4, WEBM o MOV de hasta 100 MB.',true);return}
  const {data:existing,error:checkError}=await sb.from('guild_applications').select('id,status').eq('user_id',user.id).in('status',['pending','approved']).maybeSingle();
  if(checkError){msg('guildApplicationMsg','No se pudo verificar tu solicitud: '+checkError.message,true);return}
  if(existing){msg('guildApplicationMsg','Ya tienes una solicitud pendiente o aprobada. Contacta con administración si necesitas actualizarla.',true);return}
