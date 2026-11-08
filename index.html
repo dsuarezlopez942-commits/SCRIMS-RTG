@@ -914,7 +914,7 @@ function renderTeamPlayerResults(){
  if(q.length<2){host.innerHTML='<div class="empty">Escribe al menos 2 caracteres para buscar.</div>';return}
  const myIds=new Set((teamHub.teams||[]).flatMap(t=>(t.members||[]).map(m=>m.player_id)));
  const matches=players.filter(p=>p.status==='Aprobado'&&p.id!==user?.id&&!myIds.has(p.id)&&[p.nickname,p.game_uid].some(v=>String(v||'').toLocaleLowerCase().includes(q))).slice(0,12);
- host.innerHTML=matches.length?matches.map(p=>'<div class="team-player-result"><div><b>'+esc(p.nickname)+'</b><small>UID: '+esc(p.game_uid||'—')+'</small></div><span class="muted">'+esc(p.mode||'')+'</span></div>').join(''):'<div class="empty">No se encontraron jugadores disponibles.</div>';
+ const captains=(teamHub.teams||[]).filter(t=>t.captain_id===user?.id&&(t.members||[]).length<(t.mode==='DUO'?2:4));host.innerHTML=matches.length?matches.map(p=>'<div class="team-player-result"><div><b>'+esc(p.nickname)+'</b><small>UID: '+esc(p.game_uid||'—')+'</small></div><div class="actions">'+(captains.length?captains.map(t=>'<button class="small" data-quick-invite="'+t.id+'" data-player="'+p.id+'">Invitar a '+esc(t.name)+'</button>').join(''):'<span class="muted">Sin equipo disponible para invitar</span>')+'</div></div>').join(''):'<div class="empty">No se encontraron jugadores disponibles.</div>';
 }
 $('createStandaloneTeam')?.addEventListener('click',async()=>{
  if(!user){alert('Inicia sesión primero.');return}
@@ -932,7 +932,7 @@ document.addEventListener('click',async e=>{
  if(!target){alert('No encontramos un jugador aprobado con ese UID.');return}
  send.disabled=true;const {error}=await sb.rpc('invite_player_to_team',{target_team:id,target_player:target.id});send.disabled=false;
  if(error){alert(error.message);return}alert('Invitación enviada a '+target.nickname+'.');await refresh();return}
- const respond=e.target.closest('[data-respond-team-invite]');
+ const quick=e.target.closest('[data-quick-invite]');if(quick){quick.disabled=true;const {error}=await sb.rpc('invite_player_to_team',{target_team:quick.dataset.quickInvite,target_player:quick.dataset.player});if(error){quick.disabled=false;alert(error.message);return}alert('Invitación enviada correctamente.');await refresh();return}\n const respond=e.target.closest('[data-respond-team-invite]');
  if(respond){const {error}=await sb.rpc('respond_standalone_team_invite',{target_invite:respond.dataset.respondTeamInvite,accept_invite:respond.dataset.accept==='true'});if(error){alert(error.message);return}alert(respond.dataset.accept==='true'?'¡Ya formas parte del equipo!':'Invitación rechazada.');await refresh();}
 });
 \nfunction renderTournamentHistory(){
