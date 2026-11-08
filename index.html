@@ -264,6 +264,9 @@ button,.tab{min-height:42px}
 @media(max-width:560px){.global-announcement-footer{justify-content:center;text-align:center}.global-announcement-footer span{width:100%}.global-announcement-close{right:8px;top:8px}}
 
 .admin-subnav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 20px;padding:10px;background:#111116;border:1px solid #303039;border-radius:12px;position:sticky;top:8px;z-index:5}.admin-subtab{border:1px solid #35353d;background:#1a1a21;color:#c8c8d0;border-radius:9px;padding:9px 13px;font:inherit;font-size:.88rem;cursor:pointer}.admin-subtab.active{background:#25252e;border-color:#9b7bff;color:#fff}.admin-section{display:grid;gap:14px;min-width:0}.admin-section.hidden{display:none!important}@media(max-width:700px){.admin-subnav{position:static}.admin-subtab{flex:1 1 calc(50% - 8px)}}
+
+/* Discord onboarding */
+.discord-profile-overlay{position:fixed;inset:0;z-index:4000;display:none;align-items:center;justify-content:center;padding:18px;background:#030307ed;backdrop-filter:blur(12px)}.discord-profile-overlay.open{display:flex}.discord-profile-box{width:min(480px,100%);padding:25px;border:1px solid #5865f2;border-radius:18px;background:linear-gradient(145deg,#22243a,#101014);box-shadow:0 25px 90px #000b}.discord-profile-box h2{margin:0 0 8px}.discord-profile-box p{color:#c4c4cc;font-size:13px;line-height:1.65}.discord-profile-box form{margin-top:18px}
 </style>
 </head>
 <body>
@@ -355,6 +358,20 @@ button,.tab{min-height:42px}
 <button type="button" id="globalAnnouncementClose" class="global-announcement-close" aria-label="Cerrar aviso">✕</button>
 <div class="global-announcement-symbol" id="globalAnnouncementSymbol">⚠️</div><h2 id="globalAnnouncementDisplayTitle"></h2><p id="globalAnnouncementDisplayMessage"></p>
 <div class="global-announcement-footer"><span>SCRIMS RTG · CUBEX ESPORTS</span><button type="button" id="globalAnnouncementAcknowledge" class="primary">ENTENDIDO</button></div></div></div>
+<div class="discord-profile-overlay" id="discordProfileOverlay" aria-hidden="true">
+ <section class="discord-profile-box" role="dialog" aria-modal="true" aria-labelledby="discordProfileTitle">
+  <div class="community-kicker">SCRIMS RTG · PERFIL DE JUGADOR</div>
+  <h2 id="discordProfileTitle">Completa tu registro</h2>
+  <p>Tu Discord ya está verificado. Para crear tu cuenta de jugador necesitamos tu nickname y UID de Creative Destruction. Estos datos identificarán tu perfil en torneos y clasificaciones.</p>
+  <form id="discordProfileForm">
+   <label>Nickname de Creative Destruction<input id="discordPlayerNick" maxlength="24" minlength="2" required placeholder="Tu nickname del juego"></label>
+   <label>UID de Creative Destruction<input id="discordPlayerUid" maxlength="40" minlength="3" required placeholder="Tu UID del juego"></label>
+   <button class="primary" id="saveDiscordProfileBtn">Guardar y entrar a SCRIMS RTG</button>
+   <div id="discordProfileMsg" aria-live="polite"></div>
+  </form>
+  <p style="font-size:11px;margin-bottom:0">No compartas contraseñas. SCRIMS RTG nunca te pedirá la contraseña de Creative Destruction.</p>
+ </section>
+</div>
 </main><footer>SCRIMS RTG · CUBEX ESPORTS · CREATIVE DESTRUCTION</footer>
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -683,6 +700,32 @@ $('grantAdminBtn').addEventListener('click',async()=>{
 });
 async function changeStatus(id,status){const {error}=await sb.from('profiles').update({status}).eq('id',id);if(error)alert(error.message);else await refresh()}
 let sessionCheckInProgress=false,sessionCheckQueued=false,pendingSessionRead=true,pendingSessionValue=null;
+async function ensureDiscordPlayerProfile(){
+ if(!user?.id)return;
+ const isDiscord=user.app_metadata?.provider==='discord'||(user.identities||[]).some(identity=>identity.provider==='discord');
+ if(!isDiscord)return;
+ const needsProfile=!profile||!profile.game_uid||String(profile.game_uid).startsWith('PEND-');
+ const overlay=$('discordProfileOverlay');
+ if(!needsProfile){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');return}
+ $('discordPlayerNick').value=profile?.nickname&&profile.nickname!=='Jugador'?profile.nickname:'';
+ $('discordPlayerUid').value='';
+ overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');
+}
+$('discordProfileForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(!sb||!user?.id){msg('discordProfileMsg','Tu sesión no está disponible. Vuelve a iniciar sesión.',true);return}
+ const nickname=$('discordPlayerNick').value.trim(),uid=$('discordPlayerUid').value.trim(),button=$('saveDiscordProfileBtn');
+ if(nickname.length<2||nickname.length>24||uid.length<3||uid.length>40){msg('discordProfileMsg','Revisa el nickname y el UID. Comprueba que estén completos.',true);return}
+ button.disabled=true;msg('discordProfileMsg','Guardando tu perfil de jugador…');
+ try{
+  const {error}=await sb.rpc('complete_discord_player_profile',{player_nickname:nickname,player_uid:uid});
+  if(error){msg('discordProfileMsg',error.message.includes('duplicate')||error.code==='23505'?'Ese UID ya está registrado en SCRIMS RTG. Comprueba que sea correcto.':error.message,true);return}
+  $('discordProfileOverlay').classList.remove('open');$('discordProfileOverlay').setAttribute('aria-hidden','true');
+  await sessionChanged();
+  nav('inicio');
+ }catch(err){console.error('Discord profile:',err);msg('discordProfileMsg','No se pudo guardar el perfil. Inténtalo nuevamente.',true)}
+ finally{button.disabled=false}
+});
 async function sessionChanged(sessionOverride,eventName){
  if(!sb)return;
  const hasSessionOverride=arguments.length>0;
@@ -704,6 +747,7 @@ async function sessionChanged(sessionOverride,eventName){
   if(user?.id){
    const {data:p,error:profileError}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
    if(!profileError)profile=p;
+   await ensureDiscordPlayerProfile();
    isAdmin=profile?.role==='admin';
    $('sessionInfo').textContent=(user.email||'Cuenta autenticada')+' · '+(isAdmin?'Administrador':profile?.status||'Cuenta registrada');
    $('adminGate').textContent=isAdmin?'Acceso administrativo habilitado.':'Tu cuenta no tiene permisos de administrador.';
