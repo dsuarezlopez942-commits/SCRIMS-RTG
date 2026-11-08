@@ -267,6 +267,102 @@ button,.tab{min-height:42px}
 
 /* Discord onboarding */
 .discord-profile-overlay{position:fixed;inset:0;z-index:4000;display:none;align-items:center;justify-content:center;padding:18px;background:#030307ed;backdrop-filter:blur(12px)}.discord-profile-overlay.open{display:flex}.discord-profile-box{width:min(480px,100%);padding:25px;border:1px solid #5865f2;border-radius:18px;background:linear-gradient(145deg,#22243a,#101014);box-shadow:0 25px 90px #000b}.discord-profile-box h2{margin:0 0 8px}.discord-profile-box p{color:#c4c4cc;font-size:13px;line-height:1.65}.discord-profile-box form{margin-top:18px}
+
+/* =========================================================
+   SCRIMS RTG · DARK PREMIUM BLUE MOTION SYSTEM
+   Visual-only layer: preserves existing app logic and data.
+   ========================================================= */
+:root{
+ --bg:#080c13;--panel:#101925;--panel2:#152235;--line:#26384d;
+ --muted:#9aaabd;--white:#f3f7fc;--cyan:#55a8ff;--purple:#147ce5;
+ --green:#86d6b2;--red:#f28b9b;
+}
+body{
+ background:radial-gradient(ellipse at 50% -18%,#12345a 0,transparent 43%),#080c13;
+}
+body:before{
+ background:
+  radial-gradient(circle at 18% 28%,#147ce533 0,transparent 22%),
+  radial-gradient(circle at 78% 22%,#55a8ff22 0,transparent 24%),
+  radial-gradient(circle at 58% 78%,#1262ad20 0,transparent 25%),
+  radial-gradient(circle at 30% 82%,#0d4f8d18 0,transparent 20%),
+  radial-gradient(#b9dcff30 .7px,transparent .9px);
+ background-size:auto,auto,auto,auto,38px 38px;
+ animation:rtgBlueAmbient 32s ease-in-out infinite alternate;
+}
+@keyframes rtgBlueAmbient{
+ 0%{transform:translate3d(-1.2%,-1%,0) rotate(0deg);background-position:0 0,0 0,0 0,0 0,0 0}
+ 50%{transform:translate3d(1.2%,1%,0) rotate(1deg);background-position:26px -18px,-20px 16px,18px 22px,-15px -12px,14px 18px}
+ 100%{transform:translate3d(-.4%,1.5%,0) rotate(-.7deg);background-position:-18px 20px,24px -12px,-20px 15px,18px 10px,-13px -16px}
+}
+header{
+ background:rgba(8,12,19,.88);border-bottom-color:#55a8ff26;
+ box-shadow:0 8px 32px #0003;
+}
+.brand h1{ text-shadow:0 0 22px #147ce555; }
+.logo{filter:drop-shadow(0 0 12px #147ce566)}
+.eyebrow,.hero .eyebrow{color:#70baff}
+.hero h2 span{color:#75bdff;text-shadow:0 0 32px #147ce544}
+nav{background:#0e1724;border-color:#263b53;box-shadow:0 8px 30px #0003}
+.tab,button{transition:background .22s,border-color .22s,color .22s,transform .22s,box-shadow .22s,filter .22s}
+.tab.active{background:linear-gradient(135deg,#145da5,#123b67);border-color:#398fdf;color:#fff;box-shadow:0 0 22px #147ce533}
+.tab:hover,button:hover{background:#172b42;border-color:#397db8;box-shadow:0 0 18px #147ce522}
+button.primary,.mode-card button{background:linear-gradient(135deg,#218bea,#1165b7);color:#fff;border-color:#3d9af0;box-shadow:0 5px 20px #147ce533}
+button.primary:hover,.mode-card button:hover{background:linear-gradient(135deg,#55a8ff,#147ce5);color:#fff;box-shadow:0 0 26px #147ce566}
+.card,.stat,.mode-card,.podium-card{
+ background-color:#101925;border-color:#26384d;
+ box-shadow:0 16px 45px #0003;
+}
+.card{background:linear-gradient(145deg,#142033,#0d1521)}
+.card h3{color:#f3f7fc}
+.stat{background:#0c1521}
+.stat b{color:#eaf4ff}
+input,select{background:#0b1420;border-color:#30445d}
+input:focus,select:focus{border-color:#55a8ff;box-shadow:0 0 0 3px #147ce526}
+th{color:#76baff}
+tbody tr:hover{background:#55a8ff0c}
+.notice{border-color:#28649b;background:#10253b;color:#c6e4ff}
+.pill{background:#17283b;border-color:#2b4967;color:#d6eaff}
+.mode-card{border-color:#3a526d}
+.mode-card:after{background:linear-gradient(180deg,#07101a12 0%,#07101a66 38%,#07101af5 100%)}
+.mode-card:hover{border-color:#55a8ff;box-shadow:0 0 30px #147ce533,0 18px 45px #0008}
+.podium-card{background:linear-gradient(155deg,#1b2b40,#101925)}
+.podium-card.first{border-color:#55a8ff88;background:linear-gradient(155deg,#164b7b66,#101925 75%)}
+.podium-card.second{border-color:#8ba9c988;background:linear-gradient(155deg,#263d5555,#101925 75%)}
+.podium-card.third{border-color:#527b9d88;background:linear-gradient(155deg,#20374b55,#101925 75%)}
+.podium-place{color:#78bcff}
+footer{border-top-color:#55a8ff20;color:#8297ae}
+
+/* Ambient entrances, hover lift, focus and feedback motion */
+@keyframes rtgFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rtgGlowPulse{0%,100%{box-shadow:0 0 0 #147ce500}50%{box-shadow:0 0 24px #147ce52b}}
+@keyframes rtgShimmer{0%{background-position:180% 0}100%{background-position:-180% 0}}
+main{animation:rtgFadeUp .65s cubic-bezier(.2,.7,.2,1) both}
+.hero{animation:rtgFadeUp .75s .06s cubic-bezier(.2,.7,.2,1) both}
+.card,.mode-card,.stat,.podium-card{
+ animation:rtgFadeUp .55s cubic-bezier(.2,.7,.2,1) both;
+ transition:transform .28s cubic-bezier(.2,.7,.2,1),border-color .25s,box-shadow .25s,background .25s;
+}
+.card:hover,.stat:hover,.podium-card:hover{transform:translateY(-4px);border-color:#397db8;box-shadow:0 18px 42px #0006,0 0 22px #147ce51c}
+.mode-card:hover{transform:translateY(-5px)}
+button:focus-visible,.tab:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #70baff;outline-offset:3px}
+button.primary{position:relative;overflow:hidden}
+button.primary:after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(110deg,transparent 25%,#ffffff35 48%,transparent 70%);
+ background-size:220% 100%;opacity:0;transition:opacity .2s;
+}
+button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
+.discord-profile-box,.global-announcement-box{animation:rtgFadeUp .35s ease both}
+.status,.notice{animation:rtgFadeUp .3s ease both}
+@media(prefers-reduced-motion:no-preference){
+ .brand h1{animation:rtgGlowPulse 5s ease-in-out infinite}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+ body:before{animation:none!important}
+}
+
 </style>
 </head>
 <body>
