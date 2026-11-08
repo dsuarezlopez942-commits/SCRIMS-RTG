@@ -66,7 +66,7 @@ begin
  if not found then raise exception 'No se encontró un jugador aprobado.'; end if;
  if target_player=auth.uid() then raise exception 'No puedes invitarte a ti mismo.'; end if;
  select count(*) into v_count from scrim_team_members where team_id=target_team;
- if v_count >= case when v_team.mode='DUO' then 2 else 4 end then raise exception 'El equipo ya está completo.'; end if;
+ if v_count >= (case when v_team.mode='DUO' then 2 else 4 end) then raise exception 'El equipo ya está completo.'; end if;
  if exists(select 1 from scrim_team_members where player_id=target_player) then raise exception 'Ese jugador ya pertenece a un equipo.'; end if;
  if exists(select 1 from scrim_team_invites where team_id=target_team and invitee_id=target_player and status='Pendiente') then raise exception 'Ya existe una invitación pendiente para ese jugador.'; end if;
  insert into scrim_team_invites(team_id,invitee_id,status) values(target_team,target_player,'Pendiente');
@@ -89,7 +89,7 @@ begin
  if accept_invite then
   if exists(select 1 from scrim_team_members where player_id=auth.uid()) then raise exception 'Ya perteneces a un equipo.'; end if;
   select count(*) into v_count from scrim_team_members where team_id=v_team.id;
-  if v_count >= case when v_team.mode='DUO' then 2 else 4 end then raise exception 'El equipo ya está completo.'; end if;
+  if v_count >= (case when v_team.mode='DUO' then 2 else 4 end) then raise exception 'El equipo ya está completo.'; end if;
   insert into scrim_team_members(team_id,player_id) values(v_team.id,auth.uid());
   update scrim_team_invites set status='Aceptada' where id=target_invite;
  else
