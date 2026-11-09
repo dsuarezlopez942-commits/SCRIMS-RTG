@@ -843,6 +843,27 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
  .hero-video-frame>.hero-shine{animation:none!important;opacity:.12!important;background-position:center!important}
 }
 
+
+/* Character placement: far right, behind hero text and controls */
+.hero-video-frame{position:relative!important;isolation:isolate!important;overflow:hidden!important}
+.hero-video-frame>.hero-video{z-index:-2!important}
+.hero-video-frame>.hero-character{
+ z-index:0!important;right:0!important;bottom:-2%!important;
+ width:min(52%,680px)!important;height:108%!important;
+ background-image:url("assets/rtg-sniper.webp")!important;
+ background-position:center bottom!important;background-size:contain!important;
+ opacity:.96!important;pointer-events:none!important;
+}
+.hero-video-frame>.hero-video-shade{z-index:1!important;
+ background:linear-gradient(90deg,#06101fea 0%,#071321c9 38%,#07132142 72%,#07132118 100%),linear-gradient(0deg,#06101dbb,transparent 52%)!important;
+}
+.hero-video-frame>.hero-video-copy,.hero-video-frame>.hero-live-tag{z-index:5!important}
+.hero-video-frame>.hero-shine{z-index:4!important}
+@media(max-width:760px){
+ .hero-video-frame>.hero-character{right:-7%!important;bottom:4%!important;width:76%!important;height:78%!important;opacity:.55!important}
+ .hero-video-frame>.hero-video-shade{background:linear-gradient(0deg,#06101ef8 0%,#071321dc 52%,#07132170 100%)!important}
+}
+
 </style>
 </head>
 <body>
