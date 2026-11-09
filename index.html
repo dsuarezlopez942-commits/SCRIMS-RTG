@@ -713,6 +713,64 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
 .guild-media{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}
 .guild-media img,.guild-media video{width:100%;max-height:180px;object-fit:cover;border-radius:9px;background:#050a10}
 @media(max-width:700px){.guild-form-grid{grid-template-columns:1fr}.guild-form-grid .full{grid-column:auto}}
+
+/* RTG CINEMATIC EXPERIENCE · video hero, highlights and gallery */
+.cinematic-hero{padding-top:18px!important}
+.hero-video-frame{position:relative;min-height:clamp(420px,52vw,620px);overflow:hidden;border:1px solid #4b83b4;border-radius:22px;background:#071321;isolation:isolate;box-shadow:0 25px 80px #0009,0 0 40px #147ce522}
+.hero-video-frame .hero-video{position:absolute;inset:0;width:100%;height:100%;min-height:100%;aspect-ratio:auto;object-fit:cover;object-position:center 38%;border:0;border-radius:0;margin:0;animation:none!important;filter:saturate(1.12) brightness(.72)}
+.hero-video-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#06101bea 0%,#071321bd 43%,#07132135 100%),linear-gradient(0deg,#06101ddd,transparent 55%)}
+.hero-video-copy{position:absolute;z-index:2;left:clamp(22px,6vw,76px);bottom:clamp(35px,7vw,78px);max-width:680px}
+.hero-video-copy h2{font-size:clamp(48px,8.5vw,100px);letter-spacing:-4px;line-height:.94;margin:14px 0 18px;text-shadow:0 8px 35px #000}
+.hero-video-copy h2 span{color:#75bdff}
+.hero-video-copy p{max-width:560px;color:#d5e5f5;font-size:clamp(14px,1.7vw,18px);text-shadow:0 2px 12px #000}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.hero-cta button{min-height:48px;padding:12px 18px}
+.hero-ghost{background:#0a1b2dcc!important;border-color:#79bfff!important;color:#eaf6ff!important}
+.hero-live-tag{position:absolute;z-index:2;right:22px;top:22px;padding:8px 12px;border:1px solid #a8d7ff55;border-radius:99px;background:#071321a8;color:#d9efff;font-size:10px;font-weight:900;letter-spacing:1.5px;backdrop-filter:blur(8px)}
+.hero-live-tag i{display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;background:#54e0a4;box-shadow:0 0 12px #54e0a4;animation:rtgLivePulse 1.8s infinite}
+@keyframes rtgLivePulse{50%{opacity:.35;transform:scale(.75)}}
+.media-showcase,.gallery-showcase{overflow:hidden}
+.showcase-heading{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:18px}
+.showcase-heading h3{font-size:clamp(22px,3vw,30px);letter-spacing:1px;margin:5px 0}
+.showcase-heading p{margin:0}
+.showcase-mark{color:#76baff;font-size:10px;font-weight:900;letter-spacing:2px;white-space:nowrap}
+.highlight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.highlight-card{position:relative;overflow:hidden;min-width:0;min-height:190px;border:1px solid #2e5275;border-radius:13px;background:#081421;transition:transform .25s,border-color .25s,box-shadow .25s}
+.highlight-card.featured{grid-column:span 2;grid-row:span 2;min-height:395px}
+.highlight-card video{display:block;width:100%;height:100%;min-height:190px;object-fit:cover;background:#071321}
+.highlight-card.featured video{min-height:395px}
+.highlight-card:after{content:"";position:absolute;inset:35% 0 0;pointer-events:none;background:linear-gradient(transparent,#06101ddd)}
+.highlight-card:hover{transform:translateY(-4px);border-color:#79bfff;box-shadow:0 16px 38px #0007,0 0 20px #147ce522}
+.highlight-caption{position:absolute;z-index:1;left:15px;right:12px;bottom:12px;display:grid;gap:3px;pointer-events:none}
+.highlight-caption span{font-size:9px;letter-spacing:2px;color:#9ed2ff;font-weight:900}
+.highlight-caption b{font-size:14px;letter-spacing:.7px}
+.media-note{margin:15px 0 0;padding:11px 13px;border:1px dashed #355574;border-radius:10px;color:#9eb2c9;font-size:11px}
+.arena-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.arena-gallery figure{position:relative;overflow:hidden;margin:0;min-height:210px;border:1px solid #315476;border-radius:13px;background:#071321}
+.arena-gallery img{display:block;width:100%;height:100%;min-height:210px;object-fit:cover;transition:transform .55s,filter .35s;filter:saturate(.9)}
+.arena-gallery figure:hover img{transform:scale(1.07);filter:saturate(1.2)}
+.arena-gallery figure:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(transparent,#06101eeF)}
+.arena-gallery figcaption{position:absolute;z-index:1;left:17px;bottom:15px;display:grid;gap:3px}
+.arena-gallery figcaption b{font-size:24px;letter-spacing:2px}
+.arena-gallery figcaption span{font-size:9px;letter-spacing:1.5px;color:#9ed2ff;font-weight:850}
+.reveal-on-scroll{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.7,.2,1)}
+.reveal-on-scroll.is-visible{opacity:1;transform:none}
+@media(max-width:760px){
+ .hero-video-frame{min-height:490px;border-radius:14px}
+ .hero-video-copy{left:20px;right:18px;bottom:30px}
+ .hero-video-copy h2{font-size:clamp(48px,13vw,72px);letter-spacing:-2px}
+ .hero-video-shade{background:linear-gradient(0deg,#06101ef5 0%,#071321a8 55%,#07132140 100%)}
+ .hero-live-tag{top:12px;right:12px;font-size:8px}
+ .highlight-grid{grid-template-columns:1fr 1fr}
+ .highlight-card.featured{grid-column:span 2;grid-row:auto;min-height:250px}
+ .highlight-card.featured video{min-height:250px}
+ .highlight-card,.highlight-card video{min-height:150px}
+ .arena-gallery{grid-template-columns:1fr}
+ .arena-gallery figure,.arena-gallery img{min-height:190px}
+ .showcase-heading{align-items:flex-start;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){.reveal-on-scroll{opacity:1;transform:none;transition:none}.hero-live-tag i{animation:none}}
+
 </style>
 </head>
 <body>
@@ -731,7 +789,16 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
 </div>
 
 <main>
-<section class="hero"><img class="hero-banner" src="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png" alt="Banner de SCRIMS RTG con personaje de Creative Destruction"><div class="eyebrow">COMPETITIVE ARENA</div><h2>DOMINA LA <span>CLASIFICACIÓN.</span></h2><p>Plataforma online de scrims y torneos de Creative Destruction. Regístrate, participa y sigue los resultados en una clasificación compartida.</p></section>
+<section class="hero cinematic-hero">
+<div class="hero-video-frame">
+ <video class="hero-banner hero-video" autoplay muted loop playsinline preload="metadata" poster="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png" aria-label="Vídeo de presentación SCRIMS RTG">
+  <source src="media/rtg-hero.mp4" type="video/mp4">
+ </video>
+ <div class="hero-video-shade"></div>
+ <div class="hero-video-copy"><div class="eyebrow">CREATIVE DESTRUCTION · COMPETITIVE ARENA</div><h2>ROAD TO <span>GLORY.</span></h2><p>La arena competitiva donde cada partida cuenta. Compite, escala posiciones y deja tu marca en SCRIMS RTG.</p><div class="hero-cta"><button type="button" class="primary" data-view="torneos">EXPLORAR TORNEOS ↗</button><button type="button" class="hero-ghost" data-view="gremio">UNIRME A RTG</button></div></div>
+ <span class="hero-live-tag"><i></i> THE COMPETITIVE HUB</span>
+</div>
+</section>
 <div class="card" id="connectionCard"><b>Conectando con SCRIMS RTG…</b><div class="muted" id="connectionText">Comprobando conexión segura con la base de datos.</div></div>
 <nav id="tabs"><button class="tab active" data-view="inicio">Inicio</button><button class="tab" data-view="cuenta">Registro / Acceso</button><button class="tab" data-view="jugadores">Jugadores</button><button class="tab" data-view="torneos">Torneos</button><button class="tab" data-view="equipos">Equipos</button><button class="tab" data-view="gremio">Aplicar al Gremio</button><button class="tab" data-view="clasificacion">Clasificación</button><button class="tab" data-view="notificaciones">Notificaciones <span id="notificationBadge"></span></button><button class="tab hidden" id="adminTab" data-view="admin">Administrador</button></nav>
 <section id="inicio" class="view grid">
@@ -744,6 +811,20 @@ button.primary:hover:after{opacity:1;animation:rtgShimmer 1.1s ease}
 <div class="card half"><h3>Estado de tu cuenta</h3><div id="sessionInfo" class="muted">No has iniciado sesión.</div><p class="muted">Los registros y resultados se comparten mediante Supabase. Las solicitudes nuevas requieren aprobación del administrador.</p></div>
 <div class="card"><h3>Últimos torneos</h3><div id="homeTournaments" class="empty">Cargando torneos…</div></div>
 
+<div class="card media-showcase" id="rtg-highlights">
+ <div class="showcase-heading"><div><div class="eyebrow">WATCH · COMPETE · REPEAT</div><h3>RTG HIGHLIGHTS</h3><p class="muted">Las mejores jugadas, momentos decisivos y clips de nuestra comunidad.</p></div><span class="showcase-mark">01 / MEDIA</span></div>
+ <div class="highlight-grid">
+  <article class="highlight-card featured"><video controls playsinline preload="none" poster="Guerrera%20futurista%20en%20el%20desierto%20vibrante.png"><source src="media/highlights/rtg-highlight-01.mp4" type="video/mp4"></video><div class="highlight-caption"><span>FEATURED PLAY</span><b>THE ROAD TO GLORY</b></div></article>
+  <article class="highlight-card"><video controls playsinline preload="none" poster="scrims-solo.jpg"><source src="media/highlights/rtg-highlight-02.mp4" type="video/mp4"></video><div class="highlight-caption"><span>SOLO</span><b>CLUTCH MOMENTS</b></div></article>
+  <article class="highlight-card"><video controls playsinline preload="none" poster="scrims-duo.jpg"><source src="media/highlights/rtg-highlight-03.mp4" type="video/mp4"></video><div class="highlight-caption"><span>DUO</span><b>TEAM PLAY</b></div></article>
+  <article class="highlight-card"><video controls playsinline preload="none" poster="scrims-squad.jpg"><source src="media/highlights/rtg-highlight-04.mp4" type="video/mp4"></video><div class="highlight-caption"><span>SQUAD</span><b>FULL TEAM ACTION</b></div></article>
+ </div>
+ <p class="media-note">Los reproductores están preparados. Para mostrar tus clips, sube los vídeos MP4 indicados en <b>media/highlights/</b>.</p>
+</div>
+<div class="card gallery-showcase" id="rtg-gallery">
+ <div class="showcase-heading"><div><div class="eyebrow">THE WORLD OF RTG</div><h3>INSIDE THE ARENA</h3><p class="muted">SOLO · DUO · SQUAD — tres formas de luchar por la victoria.</p></div><span class="showcase-mark">02 / GALLERY</span></div>
+ <div class="arena-gallery"><figure><img src="scrims-solo.jpg" alt="Modalidad SOLO"><figcaption><b>SOLO</b><span>ONE PLAYER. ONE GOAL.</span></figcaption></figure><figure><img src="scrims-duo.jpg" alt="Modalidad DUO"><figcaption><b>DUO</b><span>PLAY AS ONE.</span></figcaption></figure><figure><img src="scrims-squad.jpg" alt="Modalidad SQUAD"><figcaption><b>SQUAD</b><span>UNITED TO WIN.</span></figcaption></figure></div>
+</div>
 <div class="card community-section" id="comunidad">
   <div class="eyebrow">ÚNETE A LA COMUNIDAD</div>
   <h3 style="font-size:22px;margin:6px 0 5px">COMUNIDAD SCRIMS RTG</h3>
@@ -1690,4 +1771,27 @@ channel=client.channel('scrims-global-announcements').on('postgres_changes',{eve
  if(!seen)setTimeout(open,900);
 })();
 </script>
+
+<script>
+/* RTG visual interactions: reveal sections on scroll and graceful media fallback. */
+(function(){
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const targets=document.querySelectorAll('#inicio>.card, #rtg-highlights, #rtg-gallery, #comunidad');
+ if('IntersectionObserver' in window&&!reduced){
+  const io=new IntersectionObserver(entries=>entries.forEach(entry=>{
+   if(entry.isIntersecting){entry.target.classList.add('reveal-on-scroll','is-visible');io.unobserve(entry.target)}
+  }),{threshold:.08});
+  targets.forEach(el=>{el.classList.add('reveal-on-scroll');io.observe(el)});
+ }else targets.forEach(el=>el.classList.add('is-visible'));
+ document.querySelectorAll('.hero-video,.highlight-card video').forEach(video=>{
+  video.addEventListener('error',()=>{video.classList.add('media-missing');video.setAttribute('title','Añade el archivo de vídeo indicado en media/README.md')});
+  video.addEventListener('loadeddata',()=>video.classList.remove('media-missing'));
+ });
+ document.querySelectorAll('.hero-cta [data-view]').forEach(btn=>btn.addEventListener('click',()=>{
+  const tab=document.querySelector('#tabs [data-view="'+btn.dataset.view+'"]');
+  if(tab)tab.click();
+ }));
+})();
+</script>
+
 </body></html>
