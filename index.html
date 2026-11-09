@@ -1047,7 +1047,8 @@ async function renderGuildAdminApplications(){
  host.innerHTML=data.map(a=>{
   const email=emails.get(a.user_id)||'';
   const reply=email?'<a class="small" href="mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('SCRIMS RTG · Solicitud al Gremio')+'&body='+encodeURIComponent('Hola '+(a.nickname||'')+',\\n\\nTe contactamos desde SCRIMS RTG sobre tu solicitud al Gremio RTG.\\n\\n')+'">Responder al correo</a>':'<span class="muted">Correo no disponible</span>';
-  return '<article class="guild-application"><div class="actions" style="justify-content:space-between"><b>'+esc(a.nickname)+'</b><span class="pill '+(a.status==='approved'?'ok':a.status==='pending'?'wait':'')+'">'+esc(a.status)+'</span></div><p class="muted">UID: '+esc(a.game_uid)+' · '+esc(a.country)+' · '+a.age+' años · '+new Date(a.created_at).toLocaleString('es-BO')+'</p><p><b>Correo de registro:</b> '+esc(email||'No disponible')+'</p><p><b>Experiencia:</b> '+esc(a.experience||'—')+'</p><p><b>Redes / Discord:</b> '+esc(a.socials||'—')+'</p><p style="white-space:pre-wrap">'+esc(a.message)+'</p><div class="guild-media" id="guildMedia-'+a.id+'"></div><label>Observación administrativa<textarea id="guildNote-'+a.id+'" rows="2" maxlength="1000">'+esc(a.admin_note||'')+'</textarea></label><div class="actions" style="margin-top:10px">'+reply+'<button class="small primary" data-guild-status="approved" data-guild-id="'+a.id+'">Aprobar ingreso</button><button class="small danger" data-guild-status="rejected" data-guild-id="'+a.id+'">Rechazar</button><button class="small" data-guild-status="pending" data-guild-id="'+a.id+'">Dejar pendiente</button></div></article>';
+  const approveReply=email?'<button class="small primary" data-guild-approve-reply="'+a.id+'" data-guild-email="'+encodeURIComponent(email)+'" data-guild-nickname="'+encodeURIComponent(a.nickname||'Jugador')+'">Aprobar y responder por correo</button>':'';
+  return '<article class="guild-application"><div class="actions" style="justify-content:space-between"><b>'+esc(a.nickname)+'</b><span class="pill '+(a.status==='approved'?'ok':a.status==='pending'?'wait':'')+'">'+esc(a.status)+'</span></div><p class="muted">UID: '+esc(a.game_uid)+' · '+esc(a.country)+' · '+a.age+' años · '+new Date(a.created_at).toLocaleString('es-BO')+'</p><p><b>Correo de registro:</b> '+esc(email||'No disponible')+'</p><p><b>Experiencia:</b> '+esc(a.experience||'—')+'</p><p><b>Redes / Discord:</b> '+esc(a.socials||'—')+'</p><p style="white-space:pre-wrap">'+esc(a.message)+'</p><div class="guild-media" id="guildMedia-'+a.id+'"></div><label>Observación administrativa<textarea id="guildNote-'+a.id+'" rows="2" maxlength="1000">'+esc(a.admin_note||'')+'</textarea></label><div class="actions" style="margin-top:10px">'+approveReply+reply+'<button class="small primary" data-guild-status="approved" data-guild-id="'+a.id+'">Aprobar ingreso</button><button class="small danger" data-guild-status="rejected" data-guild-id="'+a.id+'">Rechazar</button><button class="small" data-guild-status="pending" data-guild-id="'+a.id+'">Dejar pendiente</button></div></article>';
  }).join('');
  for(const a of data){
   const media=Array.isArray(a.media)?a.media:[],target=$('guildMedia-'+a.id);
@@ -1059,6 +1060,20 @@ async function renderGuildAdminApplications(){
    target.appendChild(el);
   }
  }
+ host.querySelectorAll('[data-guild-approve-reply]').forEach(btn=>btn.onclick=async()=>{
+  if(!isAdmin)return;
+  const id=btn.dataset.guildApproveReply,email=decodeURIComponent(btn.dataset.guildEmail||''),nickname=decodeURIComponent(btn.dataset.guildNickname||'Jugador');
+  const mailWindow=window.open('about:blank','_blank');
+  if(!mailWindow){alert('Tu navegador bloqueó la ventana del correo. Permite las ventanas emergentes para SCRIMS RTG e inténtalo de nuevo.');return}
+  btn.disabled=true;
+  const note=$('guildNote-'+id).value.trim();
+  const {error:updateError}=await sb.from('guild_applications').update({status:'approved',admin_note:note,reviewed_by:user.id,reviewed_at:new Date().toISOString()}).eq('id',id);
+  if(updateError){mailWindow.close();alert('No se pudo aprobar la candidatura: '+updateError.message);btn.disabled=false;return}
+  const subject=encodeURIComponent('SCRIMS RTG · ¡Tu candidatura ha sido aprobada!');
+  const body=encodeURIComponent('Hola '+nickname+',\\n\\n¡Tenemos buenas noticias! Tu candidatura para formar parte del Gremio RTG ROAD TO GLORY ha sido aprobada.\\n\\nContacta con la administración en nuestro Discord para continuar con el proceso de ingreso.\\n\\n¡Bienvenido/a a RTG!\\nROAD TO GLORY');
+  mailWindow.location.href='mailto:'+email+'?subject='+subject+'&body='+body;
+  await renderGuildAdminApplications();await renderMyGuildApplication();
+ });
  host.querySelectorAll('[data-guild-status]').forEach(btn=>btn.onclick=async()=>{
   if(!isAdmin)return;
   const id=btn.dataset.guildId,status=btn.dataset.guildStatus,note=$('guildNote-'+id).value.trim();
