@@ -1071,7 +1071,8 @@ async function renderGuildAdminApplications(){
   if(updateError){mailWindow.close();alert('No se pudo aprobar la candidatura: '+updateError.message);btn.disabled=false;return}
   const subject=encodeURIComponent('SCRIMS RTG · ¡Tu candidatura ha sido aprobada!');
   const body=encodeURIComponent('Hola '+nickname+',\\n\\n¡Tenemos buenas noticias! Tu candidatura para formar parte del Gremio RTG ROAD TO GLORY ha sido aprobada.\\n\\nContacta con la administración en nuestro Discord para continuar con el proceso de ingreso.\\n\\n¡Bienvenido/a a RTG!\\nROAD TO GLORY');
-  mailWindow.location.href='mailto:'+email+'?subject='+subject+'&body='+body;
+  const gmailCompose='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(email)+'&su='+subject+'&body='+body;
+  mailWindow.location.replace(gmailCompose);
   await renderGuildAdminApplications();await renderMyGuildApplication();
  });
  host.querySelectorAll('[data-guild-status]').forEach(btn=>btn.onclick=async()=>{
