@@ -296,9 +296,9 @@ body:before{
  100%{transform:translate3d(-.4%,1.5%,0) rotate(-.7deg);background-position:-18px 20px,24px -12px,-20px 15px,18px 10px,-13px -16px}
 }
 /* Optional muted, full-page background video. */
-#rtgBackgroundVideo{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;pointer-events:none;opacity:0;transition:opacity .8s ease}
-body.has-background-video #rtgBackgroundVideo{opacity:.28}
-@media(prefers-reduced-motion:reduce){#rtgBackgroundVideo{display:none}}
+#rtgBackgroundVideo{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;pointer-events:none;opacity:.42;transition:opacity .8s ease}
+body.has-background-video #rtgBackgroundVideo{opacity:.42}
+
 
 header{
  background:rgba(8,12,19,.88);border-bottom-color:#55a8ff26;
@@ -1920,6 +1920,6 @@ channel=client.channel('scrims-global-announcements').on('postgres_changes',{eve
 
 
 <script>
-(()=>{const v=document.getElementById('rtgBackgroundVideo');if(!v)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;const saveData=navigator.connection?.saveData===true;if(reduced||saveData){v.pause();return}v.addEventListener('playing',()=>document.body.classList.add('has-background-video'),{once:true});v.addEventListener('error',()=>document.body.classList.remove('has-background-video'),{once:true});v.play().catch(()=>{})})();
+(()=>{const v=document.getElementById('rtgBackgroundVideo');if(!v)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduced){v.pause();return}v.addEventListener('playing',()=>document.body.classList.add('has-background-video'),{once:true});v.addEventListener('error',()=>document.body.classList.remove('has-background-video'),{once:true});v.play().catch(()=>{})})();
 </script>
 </body></html>
