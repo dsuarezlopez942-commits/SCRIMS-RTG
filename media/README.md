@@ -2,6 +2,10 @@
 
 Upload your own Creative Destruction footage here. Keep these exact paths and filenames so the website can find the files.
 
+## Full-page background
+- `media/background.mp4` — muted, looped video behind the entire page. The existing animated background remains for reduced-motion, data-saving, or playback-failure cases.
+  - Recommended: MP4 (H.264), 1280x720, 30 fps, no audio, below Cloudflare Pages' per-file limit.
+
 ## Main cinematic background
 - `media/rtg-hero.mp4` — wide gameplay montage for the home hero.
   - Recommended: MP4 (H.264), 1920x1080, 10–25 seconds, muted/no voice, ideally under 25 MB.
