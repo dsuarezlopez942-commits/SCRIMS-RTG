@@ -1920,6 +1920,6 @@ channel=client.channel('scrims-global-announcements').on('postgres_changes',{eve
 
 
 <script>
-(()=>{const v=document.getElementById('rtgBackgroundVideo');if(!v)return;const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduced){v.pause();return}v.addEventListener('playing',()=>document.body.classList.add('has-background-video'),{once:true});v.addEventListener('error',()=>document.body.classList.remove('has-background-video'),{once:true});v.play().catch(()=>{})})();
+(()=>{const v=document.getElementById('rtgBackgroundVideo');if(!v)return;v.muted=true;v.defaultMuted=true;v.volume=0;v.addEventListener('playing',()=>document.body.classList.add('has-background-video'),{once:true});v.addEventListener('error',()=>document.body.classList.remove('has-background-video'),{once:true});const start=()=>{const p=v.play();if(p&&typeof p.catch==='function')p.catch(()=>{})};if(v.readyState>=2)start();else v.addEventListener('canplay',start,{once:true})})();
 </script>
 </body></html>
